@@ -7,13 +7,15 @@ const careerData: Record<string, any> = {
       "Design, develop, test and improve mechanical products, machines and systems across industries including automotive, energy, aerospace and manufacturing.",
     salary: "$102k",
     hiring: "Stable",
-    layoffRisk: "Low",
+    layoffs: "Low",
     aiRisk: "Low",
     remote: "Medium",
-    education: "Bachelor's degree typically required",
+    education: "Bachelor Degree",
+    workLife: "Good",
+    demand: "Strong",
     countries: [
+      ["🇨🇭", "Switzerland", "Very High", "Strong"],
       ["🇺🇸", "United States", "$102k+", "Strong"],
-      ["🇨🇭", "Switzerland", "High", "Strong"],
       ["🇩🇪", "Germany", "High", "Strong"],
       ["🇸🇪", "Sweden", "Competitive", "Stable"],
       ["🇨🇦", "Canada", "Competitive", "Strong"],
@@ -21,8 +23,8 @@ const careerData: Record<string, any> = {
     ],
     skills: [
       "CAD",
-      "Product Development",
       "FEA",
+      "Product Development",
       "Manufacturing",
       "Testing",
       "Materials",
@@ -30,30 +32,31 @@ const careerData: Record<string, any> = {
       "Problem Solving",
     ],
     roadmap: [
-      "Build strong engineering fundamentals",
+      "Build strong mathematics and engineering fundamentals",
       "Learn CAD and engineering analysis tools",
-      "Build practical projects and a portfolio",
+      "Build practical projects and a technical portfolio",
       "Enter a graduate or junior engineering role",
       "Develop a technical specialization",
-      "Progress to senior engineer / technical lead",
+      "Progress to senior engineer or technical lead",
       "Move into management, consulting or entrepreneurship",
     ],
     courses: [
-      {
-        title: "CAD & Product Design",
-        provider: "Course marketplace",
-        type: "Course",
-      },
-      {
-        title: "Finite Element Analysis",
-        provider: "Engineering learning platform",
-        type: "Course",
-      },
-      {
-        title: "Python for Engineers",
-        provider: "Online learning",
-        type: "Course",
-      },
+      ["CAD & Product Design", "Course"],
+      ["Finite Element Analysis", "Course"],
+      ["Python for Engineers", "Course"],
+      ["Design for Manufacturing", "Course"],
+    ],
+    certifications: [
+      "CAD certification",
+      "Project management",
+      "Quality systems",
+      "Industry-specific technical certifications",
+    ],
+    related: [
+      "Automation Engineer",
+      "Controls Engineer",
+      "Manufacturing Engineer",
+      "Product Development Engineer",
     ],
   },
 
@@ -62,16 +65,18 @@ const careerData: Record<string, any> = {
     category: "Technology",
     score: 92,
     description:
-      "Design and build software applications, platforms and digital systems used by businesses and consumers.",
+      "Design and build software products, applications and digital systems used by businesses and consumers around the world.",
     salary: "$133k",
     hiring: "Strong",
-    layoffRisk: "Medium",
+    layoffs: "Medium",
     aiRisk: "Medium",
     remote: "High",
-    education: "Degree optional",
+    education: "Degree Optional",
+    workLife: "Good",
+    demand: "Strong",
     countries: [
       ["🇺🇸", "United States", "$133k+", "Strong"],
-      ["🇨🇭", "Switzerland", "Very high", "Strong"],
+      ["🇨🇭", "Switzerland", "Very High", "Strong"],
       ["🇸🇬", "Singapore", "High", "Strong"],
       ["🇩🇪", "Germany", "High", "Strong"],
       ["🇨🇦", "Canada", "High", "Strong"],
@@ -91,27 +96,28 @@ const careerData: Record<string, any> = {
       "Choose a programming language",
       "Learn programming fundamentals",
       "Build real projects",
-      "Learn Git and databases",
-      "Create a portfolio",
-      "Apply for junior roles",
+      "Learn Git, databases and APIs",
+      "Create a strong portfolio",
+      "Apply for junior engineering roles",
       "Progress into specialization or technical leadership",
     ],
     courses: [
-      {
-        title: "Programming Fundamentals",
-        provider: "Online learning",
-        type: "Course",
-      },
-      {
-        title: "Full Stack Development",
-        provider: "Course marketplace",
-        type: "Course",
-      },
-      {
-        title: "Cloud Fundamentals",
-        provider: "Certification provider",
-        type: "Certification",
-      },
+      ["Programming Fundamentals", "Course"],
+      ["Full Stack Development", "Course"],
+      ["Cloud Fundamentals", "Certification"],
+      ["System Design", "Course"],
+    ],
+    certifications: [
+      "Cloud certification",
+      "Security fundamentals",
+      "Database certification",
+      "Platform-specific credentials",
+    ],
+    related: [
+      "DevOps Engineer",
+      "Cloud Engineer",
+      "Data Engineer",
+      "Cybersecurity Analyst",
     ],
   },
 
@@ -120,16 +126,18 @@ const careerData: Record<string, any> = {
     category: "Technology",
     score: 94,
     description:
-      "Protect organizations, infrastructure and digital information from cyber threats and security incidents.",
+      "Protect organizations, infrastructure and digital information from cyber threats, vulnerabilities and security incidents.",
     salary: "$125k",
-    hiring: "Very strong",
-    layoffRisk: "Low",
+    hiring: "Very Strong",
+    layoffs: "Low",
     aiRisk: "Low",
     remote: "High",
-    education: "Degree optional",
+    education: "Degree Optional",
+    workLife: "Good",
+    demand: "Very Strong",
     countries: [
-      ["🇺🇸", "United States", "$125k+", "Very strong"],
-      ["🇸🇬", "Singapore", "High", "Very strong"],
+      ["🇺🇸", "United States", "$125k+", "Very Strong"],
+      ["🇸🇬", "Singapore", "High", "Very Strong"],
       ["🇨🇭", "Switzerland", "High", "Strong"],
       ["🇩🇪", "Germany", "High", "Strong"],
       ["🇬🇧", "United Kingdom", "High", "Strong"],
@@ -148,28 +156,90 @@ const careerData: Record<string, any> = {
     roadmap: [
       "Learn IT and networking fundamentals",
       "Learn Linux and security basics",
-      "Build a home lab",
-      "Complete practical security projects",
-      "Consider an entry certification",
-      "Enter an analyst / SOC role",
+      "Build a practical home lab",
+      "Complete security projects",
+      "Earn an entry-level certification",
+      "Enter a SOC or analyst role",
       "Specialize in security engineering or architecture",
     ],
     courses: [
-      {
-        title: "Cybersecurity Fundamentals",
-        provider: "Online learning",
-        type: "Course",
-      },
-      {
-        title: "Security Certification Preparation",
-        provider: "Certification provider",
-        type: "Certification",
-      },
-      {
-        title: "Practical Security Labs",
-        provider: "Cybersecurity lab platform",
-        type: "Labs",
-      },
+      ["Cybersecurity Fundamentals", "Course"],
+      ["Security Certification Preparation", "Certification"],
+      ["Practical Security Labs", "Labs"],
+      ["Cloud Security Fundamentals", "Course"],
+    ],
+    certifications: [
+      "CompTIA Security+",
+      "Network+",
+      "Cloud security certification",
+      "Advanced security certifications",
+    ],
+    related: [
+      "Cloud Security Engineer",
+      "Security Engineer",
+      "DevOps Engineer",
+      "Network Engineer",
+    ],
+  },
+
+  "automation-engineer": {
+    title: "Automation Engineer",
+    category: "Engineering",
+    score: 90,
+    description:
+      "Design and improve automated machines, industrial systems, production lines and control solutions.",
+    salary: "Researching",
+    hiring: "Strong",
+    layoffs: "Low",
+    aiRisk: "Low",
+    remote: "Medium",
+    education: "Bachelor Degree",
+    workLife: "Good",
+    demand: "Strong",
+    countries: [
+      ["🇩🇪", "Germany", "High", "Very Strong"],
+      ["🇸🇪", "Sweden", "Competitive", "Strong"],
+      ["🇨🇭", "Switzerland", "Very High", "Strong"],
+      ["🇺🇸", "United States", "High", "Strong"],
+      ["🇳🇱", "Netherlands", "High", "Strong"],
+      ["🇨🇦", "Canada", "Competitive", "Strong"],
+    ],
+    skills: [
+      "PLC",
+      "Control Systems",
+      "Industrial Automation",
+      "Robotics",
+      "Sensors",
+      "Electrical Systems",
+      "Python",
+      "Troubleshooting",
+    ],
+    roadmap: [
+      "Build electrical and control-system fundamentals",
+      "Learn PLC programming",
+      "Understand sensors, actuators and industrial communication",
+      "Build automation projects",
+      "Enter an automation or controls engineering role",
+      "Specialize in robotics, manufacturing or process automation",
+      "Progress to technical lead, consultant or integrator",
+    ],
+    courses: [
+      ["PLC Programming", "Course"],
+      ["Industrial Automation", "Course"],
+      ["Robotics Fundamentals", "Course"],
+      ["Control Systems", "Course"],
+    ],
+    certifications: [
+      "PLC vendor certification",
+      "Industrial automation certification",
+      "Robotics platform certification",
+      "Functional safety training",
+    ],
+    related: [
+      "Controls Engineer",
+      "Robotics Engineer",
+      "Electrical Engineer",
+      "Manufacturing Engineer",
     ],
   },
 };
@@ -187,7 +257,9 @@ function Metric({
         {label}
       </div>
 
-      <div className="mt-2 text-xl font-bold">{value}</div>
+      <div className="mt-2 text-xl font-bold">
+        {value}
+      </div>
     </div>
   );
 }
@@ -198,19 +270,25 @@ export default async function CareerPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-
   const career = careerData[slug];
 
   if (!career) {
     return (
       <main className="min-h-screen bg-[#07101f] px-6 py-24 text-center text-white">
-        <h1 className="text-4xl font-black">Career not found</h1>
+        <h1 className="text-4xl font-black">
+          Career intelligence is being prepared
+        </h1>
+
+        <p className="mx-auto mt-4 max-w-xl text-slate-400">
+          This career exists in CareerForge, but its full intelligence profile
+          has not been published yet.
+        </p>
 
         <a
           href="/careers"
           className="mt-8 inline-block rounded-xl bg-blue-500 px-6 py-3 font-bold text-slate-950"
         >
-          Back to careers
+          Back to Career Explorer
         </a>
       </main>
     );
@@ -225,12 +303,21 @@ export default async function CareerPage({
               CF
             </div>
 
-            <div className="font-bold">
-              Career<span className="text-blue-400">Forge</span>
+            <div>
+              <div className="font-bold">
+                Career<span className="text-blue-400">Forge</span>
+              </div>
+
+              <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
+                Career Intelligence
+              </div>
             </div>
           </a>
 
-          <a href="/careers" className="text-sm text-slate-400">
+          <a
+            href="/careers"
+            className="text-sm font-semibold text-slate-400 hover:text-white"
+          >
             ← Career Explorer
           </a>
         </div>
@@ -252,42 +339,47 @@ export default async function CareerPage({
             </p>
           </div>
 
-          <div className="rounded-3xl border border-blue-400/20 bg-blue-400/10 px-8 py-6 text-center">
-            <div className="text-sm text-blue-300">CareerForge Score</div>
+          <div className="rounded-3xl border border-blue-400/20 bg-gradient-to-br from-blue-400/10 to-emerald-400/5 px-8 py-6 text-center">
+            <div className="text-sm font-semibold text-blue-300">
+              CareerForge Score
+            </div>
 
-            <div className="mt-1 text-5xl font-black">{career.score}</div>
+            <div className="mt-1 text-6xl font-black">
+              {career.score}
+            </div>
 
-            <div className="text-xs text-slate-500">out of 100</div>
+            <div className="text-xs text-slate-500">
+              out of 100
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-6 md:grid-cols-3 lg:grid-cols-6">
+      <section className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-6 md:grid-cols-4 lg:grid-cols-8">
         <Metric label="Salary" value={career.salary} />
         <Metric label="Hiring" value={career.hiring} />
-        <Metric label="Layoff risk" value={career.layoffRisk} />
+        <Metric label="Layoff risk" value={career.layoffs} />
         <Metric label="AI risk" value={career.aiRisk} />
         <Metric label="Remote" value={career.remote} />
+        <Metric label="Demand" value={career.demand} />
+        <Metric label="Work-life" value={career.workLife} />
         <Metric label="Education" value={career.education} />
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-20">
-        <div className="grid gap-12 lg:grid-cols-[1.4fr_0.6fr]">
+        <div className="grid gap-12 lg:grid-cols-[1.35fr_0.65fr]">
           <div>
-            <h2 className="text-3xl font-black">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">
               Global opportunity
-            </h2>
-
-            <p className="mt-3 text-slate-400">
-              Compare this career across major job markets.
             </p>
 
-            <div className="mt-7 overflow-hidden rounded-2xl border border-white/10">
+            <h2 className="mt-3 text-4xl font-black">
+              Where this career performs best
+            </h2>
+
+            <div className="mt-8 overflow-hidden rounded-2xl border border-white/10">
               {career.countries.map(
-                (
-                  country: string[],
-                  index: number
-                ) => (
+                (country: string[], index: number) => (
                   <div
                     key={country[1]}
                     className={`grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-5 px-5 py-4 ${
@@ -296,11 +388,17 @@ export default async function CareerPage({
                         : ""
                     }`}
                   >
-                    <span className="text-2xl">{country[0]}</span>
+                    <span className="text-2xl">
+                      {country[0]}
+                    </span>
 
-                    <span className="font-semibold">{country[1]}</span>
+                    <span className="font-semibold">
+                      {country[1]}
+                    </span>
 
-                    <span className="text-slate-400">{country[2]}</span>
+                    <span className="text-slate-400">
+                      {country[2]}
+                    </span>
 
                     <span className="font-semibold text-emerald-300">
                       {country[3]}
@@ -312,11 +410,15 @@ export default async function CareerPage({
           </div>
 
           <div>
-            <h2 className="text-3xl font-black">
-              Core skills
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">
+              Skills
+            </p>
+
+            <h2 className="mt-3 text-4xl font-black">
+              What you need
             </h2>
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap gap-3">
               {career.skills.map((skill: string) => (
                 <div
                   key={skill}
@@ -334,11 +436,11 @@ export default async function CareerPage({
         <div className="mx-auto max-w-7xl px-6 py-20">
           <div className="grid gap-14 lg:grid-cols-2">
             <div>
-              <div className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">
                 Career roadmap
-              </div>
+              </p>
 
-              <h2 className="mt-4 text-4xl font-black">
+              <h2 className="mt-3 text-4xl font-black">
                 How to get there
               </h2>
 
@@ -353,7 +455,9 @@ export default async function CareerPage({
                         {index + 1}
                       </div>
 
-                      <div className="pt-2 font-semibold">{step}</div>
+                      <div className="pt-2 font-semibold">
+                        {step}
+                      </div>
                     </div>
                   )
                 )}
@@ -361,41 +465,53 @@ export default async function CareerPage({
             </div>
 
             <div>
-              <div className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">
                 Learning
-              </div>
+              </p>
 
-              <h2 className="mt-4 text-4xl font-black">
+              <h2 className="mt-3 text-4xl font-black">
                 Courses & materials
               </h2>
 
               <p className="mt-4 leading-7 text-slate-400">
-                Later, these recommendations can contain approved affiliate
-                links so CareerForge earns revenue when users purchase
-                relevant learning products.
+                CareerForge will recommend useful courses, certifications and
+                learning materials for each career.
               </p>
 
               <div className="mt-8 space-y-4">
-                {career.courses.map((course: any) => (
+                {career.courses.map((course: string[]) => (
                   <div
-                    key={course.title}
-                    className="rounded-2xl border border-white/10 bg-[#0b1527] p-5"
+                    key={course[0]}
+                    className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#0b1527] p-5"
                   >
-                    <div className="text-xs uppercase tracking-[0.15em] text-slate-500">
-                      {course.type}
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.15em] text-slate-500">
+                        {course[1]}
+                      </div>
+
+                      <div className="mt-2 text-lg font-bold">
+                        {course[0]}
+                      </div>
                     </div>
 
-                    <div className="mt-2 text-lg font-bold">
-                      {course.title}
-                    </div>
+                    <span className="text-blue-300">
+                      →
+                    </span>
+                  </div>
+                ))}
+              </div>
 
-                    <div className="mt-1 text-sm text-slate-400">
-                      {course.provider}
-                    </div>
+              <h3 className="mt-10 text-xl font-black">
+                Useful certifications
+              </h3>
 
-                    <button className="mt-5 text-sm font-bold text-blue-300">
-                      View learning option →
-                    </button>
+              <div className="mt-4 space-y-3">
+                {career.certifications.map((cert: string) => (
+                  <div
+                    key={cert}
+                    className="rounded-xl border border-white/10 bg-white/[0.035] px-4 py-3 text-sm text-slate-300"
+                  >
+                    ✓ {cert}
                   </div>
                 ))}
               </div>
@@ -405,23 +521,47 @@ export default async function CareerPage({
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-20">
-        <div className="rounded-3xl border border-blue-400/20 bg-gradient-to-br from-blue-500/10 to-emerald-400/5 p-10 text-center">
-          <div className="text-sm font-bold uppercase tracking-[0.2em] text-blue-300">
-            Coming soon
+        <div className="grid gap-8 lg:grid-cols-2">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">
+              Similar careers
+            </p>
+
+            <h2 className="mt-3 text-3xl font-black">
+              You may also consider
+            </h2>
+
+            <div className="mt-6 grid gap-3">
+              {career.related.map((item: string) => (
+                <div
+                  key={item}
+                  className="rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4 font-semibold"
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
           </div>
 
-          <h2 className="mt-4 text-4xl font-black">
-            Ask the CareerForge AI Coach
-          </h2>
+          <div className="rounded-3xl border border-blue-400/20 bg-gradient-to-br from-blue-500/10 to-emerald-400/5 p-8">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-300">
+              SEKUR Intelligence
+            </p>
 
-          <p className="mx-auto mt-4 max-w-xl text-slate-400">
-            Get a personalized plan for entering this career based on your
-            education, experience, country and income goals.
-          </p>
+            <h2 className="mt-4 text-4xl font-black">
+              Is this career right for you?
+            </h2>
 
-          <button className="mt-7 rounded-xl bg-white px-7 py-3 font-bold text-slate-950">
-            Build my career plan
-          </button>
+            <p className="mt-5 leading-7 text-slate-400">
+              Soon, CareerForge will score this career specifically for you
+              using your experience, salary target, location preferences,
+              willingness to relocate and career goals.
+            </p>
+
+            <button className="mt-7 rounded-xl bg-white px-6 py-3 font-bold text-slate-950">
+              Build my personal score
+            </button>
+          </div>
         </div>
       </section>
     </main>
