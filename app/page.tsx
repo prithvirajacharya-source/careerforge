@@ -147,9 +147,12 @@ export default function Home() {
                 className="flex-1 rounded-xl bg-transparent px-5 py-4 text-base text-white outline-none placeholder:text-slate-600"
               />
 
-              <button className="rounded-xl bg-gradient-to-r from-blue-500 to-blue-400 px-8 py-4 font-bold text-slate-950 transition hover:scale-[1.01]">
-                Explore careers
-              </button>
+             <a
+  href="/careers"
+  className="rounded-xl bg-gradient-to-r from-blue-500 to-blue-400 px-8 py-4 font-bold text-slate-950 transition hover:scale-[1.01]"
+>
+  Explore careers
+</a>
             </div>
           </div>
 
