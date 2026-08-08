@@ -1,5 +1,5 @@
 "use client";
-
+import SiteHeader from "@/components/SiteHeader";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -67,38 +67,7 @@ export default function CareersClient({
 
   return (
     <main className="min-h-screen bg-[#07101f] text-white">
-      <header className="border-b border-white/10 bg-[#07101f]/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-emerald-400 font-black text-slate-950">
-              CF
-            </div>
-
-            <div>
-              <div className="text-xl font-bold tracking-tight">
-                Career<span className="text-blue-400">Forge</span>
-              </div>
-
-              <div className="text-[10px] uppercase tracking-[0.22em] text-slate-500">
-                Global Career Intelligence
-              </div>
-            </div>
-          </Link>
-
-          <div className="flex items-center gap-4 text-sm">
-            <Link
-              href="/"
-              className="text-slate-400 transition hover:text-white"
-            >
-              Home
-            </Link>
-
-            <button className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 font-semibold transition hover:bg-white/10">
-              Sign in
-            </button>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="max-w-3xl">

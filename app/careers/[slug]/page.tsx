@@ -1,3 +1,4 @@
+import SiteHeader from "@/components/SiteHeader";
 const careerData: Record<string, any> = {
   "mechanical-engineer": {
     title: "Mechanical Engineer",
@@ -296,32 +297,7 @@ export default async function CareerPage({
 
   return (
     <main className="min-h-screen bg-[#07101f] text-white">
-      <header className="border-b border-white/10">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <a href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-emerald-400 font-black text-slate-950">
-              CF
-            </div>
-
-            <div>
-              <div className="font-bold">
-                Career<span className="text-blue-400">Forge</span>
-              </div>
-
-              <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
-                Career Intelligence
-              </div>
-            </div>
-          </a>
-
-          <a
-            href="/careers"
-            className="text-sm font-semibold text-slate-400 hover:text-white"
-          >
-            ← Career Explorer
-          </a>
-        </div>
-      </header>
+      <SiteHeader />
 
       <section className="mx-auto max-w-7xl px-6 pb-14 pt-16">
         <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
