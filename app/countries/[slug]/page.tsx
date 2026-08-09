@@ -2,8 +2,8 @@ import CountryFlag from "@/components/CountryFlag";
 import Link from "next/link";
 import ScoreCard from "@/components/ScoreCard";
 import SiteHeader from "@/components/SiteHeader";
+import { getCountryIntelligence } from "@/lib/intelligence/service";
 import { supabase } from "@/lib/supabase";
-import { swedenIntelligence } from "@/lib/intelligence/sweden";
 
 type Country = {
   id: number;
@@ -14,147 +14,6 @@ type Country = {
   language: string | null;
   region: string | null;
 };
-
-type CountryOverview = {
-  salary: string;
-  hiring: string;
-  safety: string;
-  healthcare: string;
-  visa: string;
-  costOfLiving: string;
-};
-
-/*
-  TEMPORARY fallback scores.
-
-  Sweden no longer uses this table.
-  Sweden is now calculated by the Intelligence Engine.
-
-  We will progressively move every other country
-  into the Intelligence Engine as we add verified data.
-*/
-function getPrototypeCountryScore(slug: string) {
-  const scores: Record<string, number> = {
-    germany: 89,
-    canada: 88,
-    "united-states": 86,
-    australia: 88,
-    switzerland: 94,
-    norway: 92,
-    netherlands: 90,
-    singapore: 89,
-    india: 78,
-  };
-
-  return scores[slug] ?? 80;
-}
-
-function getCountryIntelligence(
-  slug: string
-): CountryOverview {
-  const data: Record<string, CountryOverview> = {
-    sweden: {
-      salary: "High",
-      hiring: "Strong",
-      safety: "Very High",
-      healthcare: "Excellent",
-      visa: "Good",
-      costOfLiving: "High",
-    },
-
-    germany: {
-      salary: "High",
-      hiring: "Strong",
-      safety: "High",
-      healthcare: "Excellent",
-      visa: "Good",
-      costOfLiving: "Medium-High",
-    },
-
-    canada: {
-      salary: "High",
-      hiring: "Strong",
-      safety: "High",
-      healthcare: "Very Good",
-      visa: "Very Good",
-      costOfLiving: "High",
-    },
-
-    "united-states": {
-      salary: "Very High",
-      hiring: "Strong",
-      safety: "Medium",
-      healthcare: "Private",
-      visa: "Difficult",
-      costOfLiving: "Varies",
-    },
-
-    australia: {
-      salary: "High",
-      hiring: "Strong",
-      safety: "Very High",
-      healthcare: "Excellent",
-      visa: "Very Good",
-      costOfLiving: "High",
-    },
-
-    switzerland: {
-      salary: "Very High",
-      hiring: "Strong",
-      safety: "Very High",
-      healthcare: "Excellent",
-      visa: "Medium",
-      costOfLiving: "Very High",
-    },
-
-    norway: {
-      salary: "Very High",
-      hiring: "Strong",
-      safety: "Very High",
-      healthcare: "Excellent",
-      visa: "Good",
-      costOfLiving: "Very High",
-    },
-
-    netherlands: {
-      salary: "High",
-      hiring: "Strong",
-      safety: "Very High",
-      healthcare: "Excellent",
-      visa: "Good",
-      costOfLiving: "High",
-    },
-
-    singapore: {
-      salary: "High",
-      hiring: "Strong",
-      safety: "Very High",
-      healthcare: "Excellent",
-      visa: "Medium",
-      costOfLiving: "High",
-    },
-
-    india: {
-      salary: "Growing",
-      hiring: "Very Strong",
-      safety: "Varies",
-      healthcare: "Varies",
-      visa: "Easy",
-      costOfLiving: "Low",
-    },
-  };
-
-  return (
-    data[slug] ?? {
-      salary: "Researching",
-      hiring: "Researching",
-      safety: "Researching",
-      healthcare: "Researching",
-      visa: "Researching",
-      costOfLiving: "Researching",
-    }
-  );
-}
 
 function Metric({
   label,
@@ -196,6 +55,64 @@ function InfoCard({
   );
 }
 
+function getFactorLabel(score?: number) {
+  if (typeof score !== "number") {
+    return "Researching";
+  }
+
+  if (score >= 90) return "Excellent";
+  if (score >= 80) return "Strong";
+  if (score >= 70) return "Good";
+  if (score >= 60) return "Moderate";
+
+  return "Needs improvement";
+}
+
+function getFactorScore(
+  factors: {
+    key: string;
+    score: number;
+  }[],
+  key: string
+) {
+  return factors.find(
+    (factor) => factor.key === key
+  )?.score;
+}
+
+function getFactorValue(
+  factors: {
+    key: string;
+    score: number;
+  }[],
+  key: string
+) {
+  return getFactorLabel(
+    getFactorScore(factors, key)
+  );
+}
+
+function getSourceBadge(
+  sourceType: string
+) {
+  switch (sourceType) {
+    case "official":
+      return "Official";
+
+    case "market":
+      return "Market";
+
+    case "community":
+      return "Community";
+
+    case "research":
+      return "Research";
+
+    default:
+      return "Estimated";
+  }
+}
+
 export default async function CountryPage({
   params,
 }: {
@@ -203,11 +120,15 @@ export default async function CountryPage({
 }) {
   const { slug } = await params;
 
-  const { data: country, error } = await supabase
-    .from("countries")
-    .select("*")
-    .eq("slug", slug)
-    .single();
+  /*
+    1. Load basic country information.
+  */
+  const { data: country, error } =
+    await supabase
+      .from("countries")
+      .select("*")
+      .eq("slug", slug)
+      .single();
 
   if (error || !country) {
     return (
@@ -238,27 +159,94 @@ export default async function CountryPage({
     );
   }
 
-  const typedCountry = country as Country;
-
-  const intelligence =
-    getCountryIntelligence(typedCountry.slug);
+  const typedCountry =
+    country as Country;
 
   /*
-    Sweden is the FIRST country using the actual
-    SEKUR Intelligence Engine.
+    2. Load intelligence directly from Supabase.
+
+    No Sweden.ts.
+    No Germany.ts.
+    No country-specific logic.
   */
-  const usesIntelligenceEngine =
-    typedCountry.slug === "sweden";
+  const intelligenceData =
+    await getCountryIntelligence(
+      typedCountry.slug
+    );
 
-  const score = usesIntelligenceEngine
-    ? swedenIntelligence.score
-    : getPrototypeCountryScore(
-        typedCountry.slug
-      );
+  const intelligence =
+    intelligenceData?.result ?? null;
 
-  const confidence = usesIntelligenceEngine
-    ? swedenIntelligence.confidence
-    : "Prototype";
+  const rows =
+    intelligenceData?.rows ?? [];
+
+  const factors =
+    intelligence?.factors ?? [];
+
+  /*
+    Research progress is calculated from
+    non-estimated source rows.
+
+    Right now our prototype rows are estimated,
+    so this will correctly begin near 0%.
+  */
+  const verifiedRows =
+    rows.filter(
+      (row) =>
+        row.source_type !== "estimated" &&
+        Boolean(row.source_name)
+    );
+
+  const researchProgress =
+    rows.length > 0
+      ? Math.round(
+          (verifiedRows.length /
+            rows.length) *
+            100
+        )
+      : 0;
+
+  const salary =
+    getFactorValue(
+      factors,
+      "salary"
+    );
+
+  const hiring =
+    getFactorValue(
+      factors,
+      "hiring"
+    );
+
+  const safety =
+    getFactorValue(
+      factors,
+      "safety"
+    );
+
+  const healthcare =
+    getFactorValue(
+      factors,
+      "healthcare"
+    );
+
+  const visa =
+    getFactorValue(
+      factors,
+      "visa"
+    );
+
+  const workLife =
+    getFactorValue(
+      factors,
+      "work_life"
+    );
+
+  const costOfLiving =
+    getFactorValue(
+      factors,
+      "cost_of_living"
+    );
 
   return (
     <main className="min-h-screen bg-[#07101f] text-white">
@@ -277,7 +265,8 @@ export default async function CountryPage({
 
               <div>
                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">
-                  {typedCountry.region ?? "Global"}
+                  {typedCountry.region ??
+                    "Global"}
                 </p>
 
                 <h1 className="mt-3 text-6xl font-black tracking-tight md:text-7xl">
@@ -287,41 +276,65 @@ export default async function CountryPage({
             </div>
 
             <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-400">
-              Career, salary, market and relocation intelligence for{" "}
+              Career, salary, market and
+              decision intelligence for{" "}
               {typedCountry.name}.
             </p>
 
-            {usesIntelligenceEngine && (
+            {intelligence && (
               <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-emerald-400/15 bg-emerald-400/5 px-4 py-2 text-xs font-semibold text-emerald-300">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                SEKUR Intelligence Engine active
+
+                Powered by SEKUR Intelligence
               </div>
             )}
           </div>
 
-          <ScoreCard
-            title="SEKUR Intelligence Score"
-            score={score}
-            confidence={confidence}
-            items={[
-              {
-                label: "Salary",
-                value: intelligence.salary,
-              },
-              {
-                label: "Hiring",
-                value: intelligence.hiring,
-              },
-              {
-                label: "Safety",
-                value: intelligence.safety,
-              },
-              {
-                label: "Visa",
-                value: intelligence.visa,
-              },
-            ]}
-          />
+          {intelligence ? (
+            <ScoreCard
+              title="SEKUR Intelligence Score"
+              score={
+                intelligence.score
+              }
+              confidence={
+                intelligence.confidence
+              }
+              items={[
+                {
+                  label: "Salary",
+                  value: salary,
+                },
+                {
+                  label: "Hiring",
+                  value: hiring,
+                },
+                {
+                  label: "Safety",
+                  value: safety,
+                },
+                {
+                  label: "Visa",
+                  value: visa,
+                },
+              ]}
+            />
+          ) : (
+            <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-7">
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                SEKUR Intelligence
+              </div>
+
+              <h2 className="mt-4 text-2xl font-black">
+                Research in progress
+              </h2>
+
+              <p className="mt-3 leading-7 text-slate-400">
+                Intelligence factors for{" "}
+                {typedCountry.name} have
+                not been published yet.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -334,123 +347,178 @@ export default async function CountryPage({
 
         <Metric
           label="Currency"
-          value={typedCountry.currency ?? "—"}
+          value={
+            typedCountry.currency ??
+            "—"
+          }
         />
 
         <Metric
           label="Language"
-          value={typedCountry.language ?? "—"}
+          value={
+            typedCountry.language ??
+            "—"
+          }
         />
 
         <Metric
           label="Region"
-          value={typedCountry.region ?? "—"}
+          value={
+            typedCountry.region ??
+            "—"
+          }
         />
       </section>
 
-      {/* EXPLAINABLE SCORE */}
-      {usesIntelligenceEngine && (
+      {/* EXPLAINABLE INTELLIGENCE */}
+      {intelligence && (
         <section className="mx-auto max-w-7xl px-6 pt-20">
           <div className="rounded-3xl border border-white/10 bg-white/[0.025] p-8">
-            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
               <div>
                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">
                   SEKUR Recommendation
                 </p>
 
                 <h2 className="mt-3 text-3xl font-black">
-                  Why SEKUR Recommends {typedCountry.name}
+                  Why SEKUR Recommends{" "}
+                  {typedCountry.name}
                 </h2>
 
-                <p className="mt-3 max-w-2xl text-slate-400">
-                 SEKUR analyzes salary, hiring demand, healthcare,
-safety, work-life balance, cost of living and
-other intelligence signals before recommending
-a country.
+                <p className="mt-3 max-w-2xl leading-7 text-slate-400">
+                  SEKUR combines weighted
+                  intelligence factors to
+                  explain the strengths and
+                  trade-offs behind this
+                  country&apos;s score.
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-5 min-w-[240px]">
-  <div className="text-xs font-bold uppercase tracking-[0.15em] text-emerald-300">
-    Research Progress
-  </div>
+              {/* RESEARCH PROGRESS */}
+              <div className="min-w-[240px] rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-5">
+                <div className="text-xs font-bold uppercase tracking-[0.15em] text-emerald-300">
+                  Research Progress
+                </div>
 
-  <div className="mt-3 text-3xl font-black">
-    28%
-  </div>
+                <div className="mt-3 text-3xl font-black">
+                  {researchProgress}%
+                </div>
 
-  <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-    <div className="h-full w-[28%] rounded-full bg-gradient-to-r from-blue-500 to-emerald-400" />
-  </div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-400"
+                    style={{
+                      width: `${researchProgress}%`,
+                    }}
+                  />
+                </div>
 
-  <div className="mt-4 text-sm text-slate-400">
-    Verified sources
-  </div>
+                <div className="mt-4 text-sm text-slate-400">
+                  Verified sources
+                </div>
 
-  <div className="font-bold">
-    2 / 7
-  </div>
-</div>
+                <div className="font-bold">
+                  {verifiedRows.length} /{" "}
+                  {rows.length}
+                </div>
+              </div>
             </div>
 
+            {/* FACTOR CARDS */}
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {swedenIntelligence.factors.map(
-                (factor) => (
-                  <div
-                    key={factor.key}
-                    className="rounded-2xl border border-white/10 bg-[#0b1527] p-5"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <div className="font-bold">
-                          {factor.label}
+              {factors.map(
+                (factor) => {
+                  const row =
+                    rows.find(
+                      (item) =>
+                        item.factor_key ===
+                        factor.key
+                    );
+
+                  return (
+                    <div
+                      key={factor.key}
+                      className="rounded-2xl border border-white/10 bg-[#0b1527] p-5"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <div className="font-bold">
+                            {factor.label}
+                          </div>
+
+                          <div className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-600">
+                            {getSourceBadge(
+                              factor.sourceType
+                            )}
+                          </div>
                         </div>
 
-                        <div className="mt-1 text-xs uppercase tracking-[0.12em] text-slate-600">
-                          {factor.sourceType}
+                        <div className="text-right">
+                          <div className="text-2xl font-black text-blue-300">
+                            {factor.score}
+                          </div>
+
+                          <div className="mt-1 text-xs font-semibold text-slate-500">
+                            {getFactorLabel(
+                              factor.score
+                            )}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="text-2xl font-black text-blue-300">
-                        {factor.score}
+                      <div className="mt-4">
+                        <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-400"
+                            style={{
+                              width: `${factor.score}%`,
+                            }}
+                          />
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="mt-4">
-                      <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-400"
-                          style={{
-                            width: `${factor.score}%`,
-                          }}
-                        />
+                      <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+                        <span>
+                          Weight
+                        </span>
+
+                        <span className="font-semibold text-slate-300">
+                          {factor.weight}
+                        </span>
                       </div>
+
+                      {row?.source_name && (
+                        <div className="mt-4 rounded-xl border border-emerald-400/10 bg-emerald-400/5 p-3">
+                          <div className="text-xs text-slate-500">
+                            Source
+                          </div>
+
+                          <div className="mt-1 text-sm font-semibold text-emerald-300">
+                            {row.source_name}
+                          </div>
+                        </div>
+                      )}
+
+                      {factor.explanation && (
+                        <p className="mt-4 text-sm leading-6 text-slate-500">
+                          {
+                            factor.explanation
+                          }
+                        </p>
+                      )}
                     </div>
-
-                    <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-                      <span>
-                        Weight
-                      </span>
-
-                      <span className="font-semibold text-slate-300">
-                        {factor.weight}
-                      </span>
-                    </div>
-
-                    {factor.explanation && (
-                      <p className="mt-4 text-sm leading-6 text-slate-500">
-                        {factor.explanation}
-                      </p>
-                    )}
-                  </div>
-                )
+                  );
+                }
               )}
             </div>
 
-            <div className="mt-6 rounded-xl border border-amber-400/10 bg-amber-400/5 px-4 py-3 text-sm text-amber-200/70">
-              Prototype intelligence data — verified source integration is
-              still in progress.
-            </div>
+            {researchProgress < 100 && (
+              <div className="mt-6 rounded-xl border border-amber-400/10 bg-amber-400/5 px-4 py-3 text-sm text-amber-200/70">
+                SEKUR is still replacing
+                prototype estimates with
+                verified sources.
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -463,78 +531,86 @@ a country.
           </p>
 
           <h2 className="mt-3 text-4xl font-black">
-            Understand the market before you move
+            Understand the market
+            before you decide
           </h2>
 
           <p className="mt-4 max-w-2xl text-slate-400">
-            SEKUR brings together career opportunity, salary, relocation and
-            quality-of-life information in one place.
+            SEKUR brings together
+            career opportunity,
+            affordability, lifestyle and
+            market intelligence in one
+            place.
           </p>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           <InfoCard
             title="💰 Salary Intelligence"
-            text={`Salary outlook in ${typedCountry.name}: ${intelligence.salary}. Compare career-specific earning potential across experience levels.`}
+            text={`Current intelligence rating: ${salary}.`}
           />
 
           <InfoCard
             title="📈 Hiring Trends"
-            text={`Current hiring outlook: ${intelligence.hiring}. SEKUR will track job-market momentum across industries and professions.`}
+            text={`Current intelligence rating: ${hiring}.`}
           />
 
           <InfoCard
             title="📉 Layoff Trends"
-            text="Understand workforce reductions, industry risk and changing employer demand."
+            text="Workforce risk and employer-demand intelligence will be added as verified market data becomes available."
           />
 
           <InfoCard
             title="🏠 Cost of Living"
-            text={`Current broad cost-of-living level: ${intelligence.costOfLiving}. Future versions will compare housing, food, transport and savings potential.`}
+            text={`Current affordability rating: ${costOfLiving}.`}
           />
 
           <InfoCard
-            title="💸 Taxes"
-            text="Compare income taxes and estimated take-home pay for different salary levels."
+            title="⚖ Work-Life Balance"
+            text={`Current intelligence rating: ${workLife}.`}
           />
 
           <InfoCard
             title="🛂 Visa & Residency"
-            text={`Current broad visa assessment: ${intelligence.visa}. Future data will include work permits, skilled migration and permanent residency pathways.`}
+            text={`Current intelligence rating: ${visa}.`}
           />
 
           <InfoCard
             title="🏥 Healthcare"
-            text={`Healthcare overview: ${intelligence.healthcare}. Detailed country-specific system information will be added from verified sources.`}
+            text={`Current intelligence rating: ${healthcare}.`}
           />
 
           <InfoCard
             title="🛡 Safety"
-            text={`Safety overview: ${intelligence.safety}. SEKUR will later include verified quality-of-life and safety indicators.`}
+            text={`Current intelligence rating: ${safety}.`}
           />
 
           <InfoCard
             title="🏢 Top Employers"
-            text={`Discover major companies and industries hiring professionals in ${typedCountry.name}.`}
+            text={`Discover companies and industries relevant to professionals in ${typedCountry.name}.`}
           />
         </div>
       </section>
 
-      {/* PERSONALIZED COUNTRY INTELLIGENCE */}
+      {/* PERSONAL INTELLIGENCE */}
       <section className="mx-auto max-w-7xl px-6 pb-20">
         <div className="rounded-3xl border border-blue-400/20 bg-gradient-to-br from-blue-500/10 to-emerald-400/5 p-10">
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-300">
-            SEKUR Intelligence
+            Personal Intelligence
           </p>
 
           <h2 className="mt-4 text-4xl font-black">
-            Is {typedCountry.name} right for your career?
+            Is {typedCountry.name}{" "}
+            right for you?
           </h2>
 
           <p className="mt-5 max-w-2xl leading-7 text-slate-400">
-            SEKUR will combine salary, taxes, cost of living, hiring demand,
-            safety, community experience and visa accessibility to calculate a
-            personalized country score based on your career and goals.
+            The global SEKUR Score is
+            only the beginning. Personal
+            scoring will adjust the
+            recommendation using your
+            profession, priorities,
+            family situation and goals.
           </p>
 
           <div className="mt-7 grid gap-3 sm:grid-cols-3">
@@ -544,7 +620,9 @@ a country.
               </div>
 
               <div className="mt-1 text-2xl font-black">
-                {score}
+                {intelligence
+                  ? intelligence.score
+                  : "—"}
               </div>
 
               <div className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
@@ -573,9 +651,12 @@ a country.
             </div>
           </div>
 
-          <button className="mt-7 rounded-xl bg-white px-6 py-3 font-bold text-slate-950 transition hover:scale-[1.02]">
+          <Link
+            href={`/compare?left=${typedCountry.slug}&right=sweden`}
+            className="mt-7 inline-block rounded-xl bg-white px-6 py-3 font-bold text-slate-950 transition hover:scale-[1.02]"
+          >
             Compare this country
-          </button>
+          </Link>
         </div>
       </section>
     </main>

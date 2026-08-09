@@ -84,7 +84,7 @@ export default function CareersClient({
 
           <p className="mt-6 text-lg leading-8 text-slate-400">
             Search and compare careers by education, AI exposure,
-            remote flexibility and CareerForge opportunity score.
+            remote flexibility and SEKUR Opportunity Score.
           </p>
         </div>
 

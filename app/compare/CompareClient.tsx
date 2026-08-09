@@ -2,76 +2,121 @@
 
 import CountryFlag from "@/components/CountryFlag";
 import ComparisonMetric from "@/components/ComparisonMetric";
-import {
-  countryIntelligenceProfiles,
-  getAvailableCountryProfiles,
-} from "@/lib/intelligence/countries";
 import { useRouter } from "next/navigation";
 
+type Factor = {
+  key: string;
+  label: string;
+  score: number;
+  weight: number;
+  sourceType:
+    | "official"
+    | "market"
+    | "community"
+    | "research"
+    | "estimated";
+  explanation?: string;
+};
+
+type IntelligenceResult = {
+  score: number;
+  label:
+    | "Excellent"
+    | "Strong"
+    | "Good"
+    | "Moderate"
+    | "Weak";
+  confidence:
+    | "High"
+    | "Medium"
+    | "Low";
+  factors: Factor[];
+};
+
+type CompareCountry = {
+  slug: string;
+  name: string;
+  code: string;
+  region: string;
+  result: IntelligenceResult;
+};
+
 type CompareClientProps = {
+  countries: CompareCountry[];
   initialLeft: string;
   initialRight: string;
 };
 
 function getFactor(
-  slug: string,
+  country: CompareCountry,
   key: string
 ) {
-  const profile =
-    countryIntelligenceProfiles[slug];
-
-  if (!profile) {
-    return undefined;
-  }
-
-  return profile.intelligence.factors.find(
-    (factor) => factor.key === key
+  return country.result.factors.find(
+    (factor) =>
+      factor.key === key
   );
 }
 
 function factorDescription(
   score: number
 ) {
-  if (score >= 90) return "Excellent";
-  if (score >= 80) return "Strong";
-  if (score >= 70) return "Good";
-  if (score >= 60) return "Moderate";
+  if (score >= 90) {
+    return "Excellent";
+  }
+
+  if (score >= 80) {
+    return "Strong";
+  }
+
+  if (score >= 70) {
+    return "Good";
+  }
+
+  if (score >= 60) {
+    return "Moderate";
+  }
 
   return "Weak";
 }
 
 export default function CompareClient({
+  countries,
   initialLeft,
   initialRight,
 }: CompareClientProps) {
   const router = useRouter();
 
-  const availableCountries =
-    getAvailableCountryProfiles();
-
-  const leftSlug =
-    countryIntelligenceProfiles[initialLeft]
-      ? initialLeft
-      : "sweden";
-
-  const rightSlug =
-    countryIntelligenceProfiles[initialRight]
-      ? initialRight
-      : "germany";
-
   const left =
-    countryIntelligenceProfiles[leftSlug];
+    countries.find(
+      (country) =>
+        country.slug ===
+        initialLeft
+    ) ?? countries[0];
 
   const right =
-    countryIntelligenceProfiles[rightSlug];
+    countries.find(
+      (country) =>
+        country.slug ===
+        initialRight
+    ) ??
+    countries.find(
+      (country) =>
+        country.slug !== left.slug
+    )!;
 
   function changeComparison(
     newLeft: string,
     newRight: string
   ) {
+    if (newLeft === newRight) {
+      return;
+    }
+
     router.push(
       `/compare?left=${newLeft}&right=${newRight}`
     );
+
+    router.refresh();
   }
 
   const metrics = [
@@ -106,10 +151,10 @@ export default function CompareClient({
   ];
 
   const leftScore =
-    left.intelligence.score;
+    left.result.score;
 
   const rightScore =
-    right.intelligence.score;
+    right.result.score;
 
   const winner =
     leftScore === rightScore
@@ -119,23 +164,33 @@ export default function CompareClient({
       : right;
 
   const scoreDifference =
-    Math.abs(leftScore - rightScore);
+    Math.abs(
+      leftScore - rightScore
+    );
 
-  const leftAdvantages: string[] = [];
-  const rightAdvantages: string[] = [];
+  const leftAdvantages: string[] =
+    [];
+
+  const rightAdvantages: string[] =
+    [];
 
   for (const metric of metrics) {
-    const leftFactor = getFactor(
-      leftSlug,
-      metric.key
-    );
+    const leftFactor =
+      getFactor(
+        left,
+        metric.key
+      );
 
-    const rightFactor = getFactor(
-      rightSlug,
-      metric.key
-    );
+    const rightFactor =
+      getFactor(
+        right,
+        metric.key
+      );
 
-    if (!leftFactor || !rightFactor) {
+    if (
+      !leftFactor ||
+      !rightFactor
+    ) {
       continue;
     }
 
@@ -144,17 +199,21 @@ export default function CompareClient({
       rightFactor.score;
 
     if (difference >= 3) {
-      leftAdvantages.push(metric.label);
+      leftAdvantages.push(
+        metric.label
+      );
     }
 
     if (difference <= -3) {
-      rightAdvantages.push(metric.label);
+      rightAdvantages.push(
+        metric.label
+      );
     }
   }
 
   return (
     <>
-      {/* COUNTRY SELECTORS */}
+      {/* SELECTORS */}
       <section className="mt-12 rounded-3xl border border-white/10 bg-white/[0.025] p-5">
         <div className="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-end">
           <div>
@@ -163,20 +222,26 @@ export default function CompareClient({
             </label>
 
             <select
-              value={leftSlug}
+              value={left.slug}
               onChange={(event) =>
                 changeComparison(
                   event.target.value,
-                  rightSlug
+                  right.slug
                 )
               }
               className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b1527] px-4 py-4 font-bold text-white outline-none"
             >
-              {availableCountries.map(
+              {countries.map(
                 (country) => (
                   <option
                     key={country.slug}
-                    value={country.slug}
+                    value={
+                      country.slug
+                    }
+                    disabled={
+                      country.slug ===
+                      right.slug
+                    }
                   >
                     {country.name}
                   </option>
@@ -195,20 +260,26 @@ export default function CompareClient({
             </label>
 
             <select
-              value={rightSlug}
+              value={right.slug}
               onChange={(event) =>
                 changeComparison(
-                  leftSlug,
+                  left.slug,
                   event.target.value
                 )
               }
               className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b1527] px-4 py-4 font-bold text-white outline-none"
             >
-              {availableCountries.map(
+              {countries.map(
                 (country) => (
                   <option
                     key={country.slug}
-                    value={country.slug}
+                    value={
+                      country.slug
+                    }
+                    disabled={
+                      country.slug ===
+                      left.slug
+                    }
                   >
                     {country.name}
                   </option>
@@ -219,7 +290,7 @@ export default function CompareClient({
         </div>
       </section>
 
-      {/* COUNTRY HERO CARDS */}
+      {/* COUNTRY CARDS */}
       <section className="relative mt-6 grid gap-5 md:grid-cols-2">
         <div className="rounded-3xl border border-blue-400/20 bg-gradient-to-br from-blue-500/10 to-transparent p-7">
           <div className="flex items-start justify-between gap-6">
@@ -251,7 +322,7 @@ export default function CompareClient({
               </div>
 
               <div className="mt-2 text-sm font-semibold text-emerald-300">
-                {left.intelligence.label}
+                {left.result.label}
               </div>
             </div>
           </div>
@@ -291,7 +362,7 @@ export default function CompareClient({
               </div>
 
               <div className="mt-2 text-sm font-semibold text-emerald-300">
-                {right.intelligence.label}
+                {right.result.label}
               </div>
             </div>
           </div>
@@ -300,38 +371,53 @@ export default function CompareClient({
 
       {/* METRICS */}
       <section className="mt-8 space-y-4">
-        {metrics.map((metric) => {
-          const leftFactor = getFactor(
-            leftSlug,
-            metric.key
-          );
+        {metrics.map(
+          (metric) => {
+            const leftFactor =
+              getFactor(
+                left,
+                metric.key
+              );
 
-          const rightFactor = getFactor(
-            rightSlug,
-            metric.key
-          );
+            const rightFactor =
+              getFactor(
+                right,
+                metric.key
+              );
 
-          if (!leftFactor || !rightFactor) {
-            return null;
+            if (
+              !leftFactor ||
+              !rightFactor
+            ) {
+              return null;
+            }
+
+            return (
+              <ComparisonMetric
+                key={metric.key}
+                label={
+                  metric.label
+                }
+                leftValue={`${factorDescription(
+                  leftFactor.score
+                )} · ${
+                  leftFactor.score
+                }`}
+                rightValue={`${factorDescription(
+                  rightFactor.score
+                )} · ${
+                  rightFactor.score
+                }`}
+                leftScore={
+                  leftFactor.score
+                }
+                rightScore={
+                  rightFactor.score
+                }
+              />
+            );
           }
-
-          return (
-            <ComparisonMetric
-              key={metric.key}
-              label={metric.label}
-              leftValue={`${factorDescription(
-                leftFactor.score
-              )} · ${leftFactor.score}`}
-              rightValue={`${factorDescription(
-                rightFactor.score
-              )} · ${rightFactor.score}`}
-              leftScore={leftFactor.score}
-              rightScore={
-                rightFactor.score
-              }
-            />
-          );
-        })}
+        )}
       </section>
 
       {/* VERDICT */}
@@ -349,7 +435,12 @@ export default function CompareClient({
 
           <p className="mt-4 max-w-3xl leading-7 text-slate-400">
             {winner
-              ? `${winner.name} currently leads by ${scoreDifference} SEKUR Score points. The final choice still depends on what matters most to you.`
+              ? `${winner.name} currently leads by ${scoreDifference} SEKUR Score ${
+                  scoreDifference ===
+                  1
+                    ? "point"
+                    : "points"
+                }. The best choice for you may still be different.`
               : "Both countries currently receive the same overall SEKUR Score."}
           </p>
         </div>
@@ -369,10 +460,15 @@ export default function CompareClient({
             </div>
 
             <div className="mt-5 space-y-3 text-slate-300">
-              {leftAdvantages.length > 0 ? (
+              {leftAdvantages.length >
+              0 ? (
                 leftAdvantages.map(
                   (advantage) => (
-                    <div key={advantage}>
+                    <div
+                      key={
+                        advantage
+                      }
+                    >
                       <span className="mr-2 text-emerald-300">
                         ✓
                       </span>
@@ -383,8 +479,8 @@ export default function CompareClient({
                 )
               ) : (
                 <div className="text-slate-500">
-                  No significant advantage
-                  detected yet.
+                  No significant
+                  advantage detected.
                 </div>
               )}
             </div>
@@ -404,10 +500,15 @@ export default function CompareClient({
             </div>
 
             <div className="mt-5 space-y-3 text-slate-300">
-              {rightAdvantages.length > 0 ? (
+              {rightAdvantages.length >
+              0 ? (
                 rightAdvantages.map(
                   (advantage) => (
-                    <div key={advantage}>
+                    <div
+                      key={
+                        advantage
+                      }
+                    >
                       <span className="mr-2 text-emerald-300">
                         ✓
                       </span>
@@ -418,8 +519,8 @@ export default function CompareClient({
                 )
               ) : (
                 <div className="text-slate-500">
-                  No significant advantage
-                  detected yet.
+                  No significant
+                  advantage detected.
                 </div>
               )}
             </div>
@@ -432,26 +533,34 @@ export default function CompareClient({
           </div>
 
           <h3 className="mt-3 text-2xl font-black">
-            Which country is better for you?
+            Which country is better
+            for you?
           </h3>
 
           <p className="mt-3 max-w-2xl leading-7 text-slate-400">
-            Overall scores cannot know whether you
-            prioritize salary, family, permanent
-            residency, climate, safety or work-life
-            balance. Personalized SEKUR scoring will
-            answer that next.
+            SEKUR&apos;s global score
+            compares the markets.
+            Personal Intelligence will
+            adjust these weights based
+            on your career, family,
+            financial goals and
+            priorities.
           </p>
 
-          <button className="mt-6 rounded-xl bg-white px-6 py-3 font-bold text-slate-950">
-            Personal assessment coming soon
+          <button
+            disabled
+            className="mt-6 cursor-not-allowed rounded-xl bg-white px-6 py-3 font-bold text-slate-950 opacity-90"
+          >
+            Personal assessment
+            coming soon
           </button>
         </div>
       </section>
 
       <div className="mt-6 text-center text-xs text-slate-600">
-        Prototype intelligence data · Verified
-        source integration in progress
+        Prototype intelligence data ·
+        Verified source integration in
+        progress
       </div>
     </>
   );
