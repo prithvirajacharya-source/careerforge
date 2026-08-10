@@ -1,4 +1,6 @@
+import type { ReactNode } from "react";
 import ScoreCard from "@/components/ScoreCard";
+import CurrencyText from "@/components/CurrencyText";
 import SiteHeader from "@/components/SiteHeader";
 
 const careerData: Record<string, any> = {
@@ -276,7 +278,7 @@ function Metric({
   value,
 }: {
   label: string;
-  value: string | number;
+  value: ReactNode;
 }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
@@ -358,7 +360,7 @@ export default async function CareerPage({
             items={[
               {
                 label: "Salary",
-                value: career.salary,
+                value: <CurrencyText text={career.salary} />,
               },
               {
                 label: "Hiring",
@@ -381,7 +383,7 @@ export default async function CareerPage({
       <section className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-6 md:grid-cols-4">
         <Metric
           label="Salary"
-          value={career.salary}
+          value={<CurrencyText text={career.salary} />}
         />
 
         <Metric
@@ -460,7 +462,7 @@ export default async function CareerPage({
                     </span>
 
                     <span className="text-slate-400">
-                      {country[2]}
+                      <CurrencyText text={country[2]} />
                     </span>
 
                     <span className="font-semibold text-emerald-300">

@@ -1,6 +1,8 @@
+import type { ReactNode } from "react";
+
 type ScoreItem = {
   label: string;
-  value: string | number;
+  value: ReactNode;
 };
 
 type ScoreCardProps = {

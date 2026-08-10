@@ -1,4 +1,4 @@
-import CountryFlag from "@/components/CountryFlag";
+﻿import CountryFlag from "@/components/CountryFlag";
 import Link from "next/link";
 import ScoreCard from "@/components/ScoreCard";
 import SiteHeader from "@/components/SiteHeader";
@@ -137,7 +137,7 @@ export default async function CountryPage({
 
         <section className="mx-auto max-w-4xl px-6 py-24 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-400/10 text-3xl">
-            🌍
+            ðŸŒ
           </div>
 
           <h1 className="mt-6 text-4xl font-black">
@@ -296,9 +296,6 @@ export default async function CountryPage({
               score={
                 intelligence.score
               }
-              confidence={
-                intelligence.confidence
-              }
               items={[
                 {
                   label: "Salary",
@@ -349,7 +346,7 @@ export default async function CountryPage({
           label="Currency"
           value={
             typedCountry.currency ??
-            "—"
+            "â€”"
           }
         />
 
@@ -357,7 +354,7 @@ export default async function CountryPage({
           label="Language"
           value={
             typedCountry.language ??
-            "—"
+            "â€”"
           }
         />
 
@@ -365,7 +362,7 @@ export default async function CountryPage({
           label="Region"
           value={
             typedCountry.region ??
-            "—"
+            "â€”"
           }
         />
       </section>
@@ -546,47 +543,47 @@ export default async function CountryPage({
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           <InfoCard
-            title="💰 Salary Intelligence"
+            title="ðŸ’° Salary Intelligence"
             text={`Current intelligence rating: ${salary}.`}
           />
 
           <InfoCard
-            title="📈 Hiring Trends"
+            title="ðŸ“ˆ Hiring Trends"
             text={`Current intelligence rating: ${hiring}.`}
           />
 
           <InfoCard
-            title="📉 Layoff Trends"
+            title="ðŸ“‰ Layoff Trends"
             text="Workforce risk and employer-demand intelligence will be added as verified market data becomes available."
           />
 
           <InfoCard
-            title="🏠 Cost of Living"
+            title="ðŸ  Cost of Living"
             text={`Current affordability rating: ${costOfLiving}.`}
           />
 
           <InfoCard
-            title="⚖ Work-Life Balance"
+            title="âš– Work-Life Balance"
             text={`Current intelligence rating: ${workLife}.`}
           />
 
           <InfoCard
-            title="🛂 Visa & Residency"
+            title="ðŸ›‚ Visa & Residency"
             text={`Current intelligence rating: ${visa}.`}
           />
 
           <InfoCard
-            title="🏥 Healthcare"
+            title="ðŸ¥ Healthcare"
             text={`Current intelligence rating: ${healthcare}.`}
           />
 
           <InfoCard
-            title="🛡 Safety"
+            title="ðŸ›¡ Safety"
             text={`Current intelligence rating: ${safety}.`}
           />
 
           <InfoCard
-            title="🏢 Top Employers"
+            title="ðŸ¢ Top Employers"
             text={`Discover companies and industries relevant to professionals in ${typedCountry.name}.`}
           />
         </div>
@@ -622,7 +619,7 @@ export default async function CountryPage({
               <div className="mt-1 text-2xl font-black">
                 {intelligence
                   ? intelligence.score
-                  : "—"}
+                  : "â€”"}
               </div>
 
               <div className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">

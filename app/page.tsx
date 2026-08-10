@@ -1,4 +1,6 @@
 import Link from "next/link";
+import CurrencySelector from "@/components/CurrencySelector";
+import CurrencyText from "@/components/CurrencyText";
 
 const careers = [
   {
@@ -165,12 +167,16 @@ export default function Home() {
             </a>
           </nav>
 
-          <Link
-            href="/admin"
-            className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold transition hover:bg-white/10"
-          >
-            Sign in
-          </Link>
+          <div className="flex items-center gap-3">
+            <CurrencySelector />
+
+            <Link
+              href="/admin"
+              className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold transition hover:bg-white/10"
+            >
+              Sign in
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -330,7 +336,7 @@ export default function Home() {
                   </div>
 
                   <div className="mt-1 font-semibold">
-                    {career.salary}
+                    <CurrencyText text={career.salary} />
                   </div>
                 </div>
 
