@@ -13,7 +13,7 @@ import { CAREER_RESEARCH_TARGETS } from "../lib/careerResearch/registry.ts";
 import { normalizeScbSalaryResponse } from "../lib/careerResearch/scb.ts";
 
 const target = CAREER_RESEARCH_TARGETS[0];
-const candidate = normalizeScbSalaryResponse({
+const scbFixture = {
   id: ["Sektor", "Yrke2012", "Kon", "ContentsCode", "Tid"],
   size: [1, 1, 1, 3, 1],
   dimension: {
@@ -22,7 +22,33 @@ const candidate = normalizeScbSalaryResponse({
     Tid: { category: { index: { "2025": 0 } } },
   },
   value: [52_000, 41_000, 70_000],
-}, target, "2026-08-10T12:00:00.000Z");
+};
+const candidate = normalizeScbSalaryResponse(scbFixture, target, "2026-08-10T12:00:00.000Z");
+
+function runForTarget(researchTarget: (typeof CAREER_RESEARCH_TARGETS)[number]) {
+  const targetFixture = structuredClone(scbFixture);
+  const occupationIndex = targetFixture.dimension.Yrke2012.category.index as Record<string, number>;
+  const occupationLabels = targetFixture.dimension.Yrke2012.category.label as Record<string, string>;
+  delete occupationIndex["2144"];
+  delete occupationLabels["2144"];
+  occupationIndex[researchTarget.occupationCode] = 0;
+  occupationLabels[researchTarget.occupationCode] = researchTarget.careerName;
+  return {
+    id: 7,
+    status: "approved" as const,
+    career_slug: researchTarget.careerSlug,
+    country_slug: researchTarget.countrySlug,
+    schema_version: "career-research-v1",
+    candidate_profile: normalizeScbSalaryResponse(
+      targetFixture,
+      researchTarget,
+      "2026-08-10T12:00:00.000Z"
+    ),
+    published_at: null,
+    published_by: null,
+    publication_version_id: null,
+  };
+}
 
 function run(overrides = {}) {
   return {
@@ -66,7 +92,27 @@ test("only an approved, unpublished proof-target run may publish", () => {
   assert.throws(() => validateCareerResearchPublication(run({ status: "pending_review" })), /Only approved/);
   assert.throws(() => validateCareerResearchPublication(run({ status: "rejected" })), /Only approved/);
   assert.throws(() => validateCareerResearchPublication(run({ published_at: "2026-08-10T13:00:00Z" })), /already been published/);
-  assert.throws(() => validateCareerResearchPublication(run({ career_slug: "software-engineer" })), /only Mechanical Engineer/);
+});
+
+test("all seven supported Swedish research targets may publish individually", () => {
+  assert.equal(CAREER_RESEARCH_TARGETS.length, 7);
+  for (const researchTarget of CAREER_RESEARCH_TARGETS) {
+    const validated = validateCareerResearchPublication(runForTarget(researchTarget));
+    assert.equal(validated.target.careerSlug, researchTarget.careerSlug);
+    assert.equal(validated.candidate.salary.sourceCurrency, "SEK");
+  }
+});
+
+test("unsupported United States and Germany markets cannot publish", () => {
+  for (const countrySlug of ["united-states", "germany"]) {
+    const unsupported = run();
+    unsupported.country_slug = countrySlug;
+    unsupported.candidate_profile.countrySlug = countrySlug;
+    assert.throws(
+      () => validateCareerResearchPublication(unsupported),
+      /only enabled Swedish career research targets/
+    );
+  }
 });
 
 test("publication rejects foreign currency, invalid ordering, and missing provenance", () => {
@@ -120,4 +166,18 @@ test("corrective migration grants only public live-profile columns", () => {
   assert.match(sql, /revoke all privileges on table public\.career_market_profile_versions from anon/i);
   assert.doesNotMatch(sql, /grant select on table public\.career_market_profiles/i);
   assert.doesNotMatch(PUBLIC_CAREER_MARKET_PROFILE_COLUMNS, /published_by|published_from_run_id|publication_version_id|metric_provenance|researched_at/);
+});
+
+test("v1.1 migration preserves atomic audit publishing and allowlists seven Sweden careers", () => {
+  const migrationPath = fileURLToPath(new URL("../supabase/migrations/20260811_scale_career_market_publishing_sweden.sql", import.meta.url));
+  const sql = readFileSync(migrationPath, "utf8");
+  for (const researchTarget of CAREER_RESEARCH_TARGETS) {
+    assert.match(sql, new RegExp(`'${researchTarget.careerSlug}'`));
+  }
+  assert.match(sql, /v_run\.country_slug <> 'sweden'/);
+  assert.match(sql, /insert into public\.career_market_profile_versions/i);
+  assert.match(sql, /insert into public\.career_market_profiles/i);
+  assert.match(sql, /update public\.career_research_runs/i);
+  assert.match(sql, /publication_version_id = v_version_id/i);
+  assert.match(sql, /for update/i);
 });

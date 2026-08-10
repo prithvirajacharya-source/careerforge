@@ -25,10 +25,6 @@ export function validateCareerResearchPublication(run: PublishableResearchRun) {
   if (run.schema_version !== "career-research-v1") {
     throw new Error("Unsupported career research candidate schema.");
   }
-  if (run.career_slug !== "mechanical-engineer" || run.country_slug !== "sweden") {
-    throw new Error("Publishing v1 supports only Mechanical Engineer × Sweden.");
-  }
-
   const candidate = run.candidate_profile;
   if (
     candidate.careerSlug !== run.career_slug ||
@@ -38,7 +34,9 @@ export function validateCareerResearchPublication(run: PublishableResearchRun) {
   }
 
   const target = getCareerResearchTarget(run.career_slug, run.country_slug);
-  if (!target?.enabled) throw new Error("Career research target is no longer supported.");
+  if (!target?.enabled) {
+    throw new Error("Publishing supports only enabled Swedish career research targets.");
+  }
   validateCareerResearchCandidate(candidate, target.nativeCurrency);
 
   const provenance = candidate.salary.typical.provenance;
