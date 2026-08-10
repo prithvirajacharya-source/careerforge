@@ -2,6 +2,7 @@
 "use client";
 import BulkSafetyResearch from "@/components/admin/BulkSafetyResearch";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 type AdminModule = {
@@ -222,9 +223,9 @@ export default function AdminPage() {
     {
       icon: "💼",
       title: "Career Intelligence",
-      description: "Manage career profiles and future career scoring.",
-      href: "#career-management",
-      status: "BUILDING",
+      description: "Run and review Career × Country evidence collection.",
+      href: "/admin/career-research",
+      status: "LIVE",
     },
     {
       icon: "📊",
@@ -271,7 +272,7 @@ export default function AdminPage() {
     <main className="min-h-screen bg-[#07101f] text-white">
       <header className="border-b border-white/10 bg-[#07101f]/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <a href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-emerald-400 font-black text-slate-950">
               S
             </div>
@@ -282,15 +283,15 @@ export default function AdminPage() {
                 Research Console
               </div>
             </div>
-          </a>
+          </Link>
 
           <div className="flex items-center gap-4">
-            <a
+            <Link
               href="/"
               className="hidden text-sm font-semibold text-slate-400 transition hover:text-white sm:block"
             >
               View SEKUR →
-            </a>
+            </Link>
 
             {isLoggedIn && (
               <button
@@ -401,12 +402,12 @@ export default function AdminPage() {
                   )}
               </a>
 
-              <a
+              <Link
                 href="/admin/intelligence"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 font-black text-slate-950 transition hover:scale-[1.02]"
               >
                 Open Intelligence CMS →
-              </a>
+              </Link>
             </div>
           </div>
 
