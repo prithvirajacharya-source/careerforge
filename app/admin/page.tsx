@@ -1,5 +1,6 @@
-"use client";
 
+"use client";
+import BulkSafetyResearch from "@/components/admin/BulkSafetyResearch";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -507,8 +508,10 @@ export default function AdminPage() {
                   </div>
                 </a>
               ))}
-            </div>
+                        </div>
           </div>
+
+          <BulkSafetyResearch />
 
           <div
             id="career-management"
