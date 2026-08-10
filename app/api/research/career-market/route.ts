@@ -8,6 +8,10 @@ import {
   type CareerResearchDecision,
 } from "@/lib/careerResearch/review";
 import type { CareerResearchRunStatus } from "@/lib/careerResearch/model";
+import {
+  validateCareerResearchPublication,
+  type PublishableResearchRun,
+} from "@/lib/careerResearch/publishing";
 
 type ResearchRequest = { careerSlug?: string; countrySlug?: string };
 type ReviewRequest = {
@@ -158,6 +162,54 @@ export async function PATCH(request: Request) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown career research review error.";
+    return NextResponse.json({ error: message }, { status: errorStatus(message) });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const { supabase } = await authenticateCareerResearchAdmin(request);
+    const body = (await request.json().catch(() => ({}))) as { runId?: number };
+    if (!Number.isInteger(body.runId) || Number(body.runId) <= 0) {
+      throw new Error("A valid research run ID is required.");
+    }
+
+    const { data: run, error: loadError } = await supabase
+      .from("career_research_runs")
+      .select("*")
+      .eq("id", body.runId)
+      .single();
+    if (loadError || !run) throw new Error("Career research run was not found.");
+
+    validateCareerResearchPublication(run as PublishableResearchRun);
+    const fallbackLiveProfile = getCareerCountryProfile(run.career_slug, run.country_slug);
+    if (!fallbackLiveProfile) throw new Error("Current live fallback profile was not found.");
+
+    const { data: publication, error: publishError } = await supabase.rpc(
+      "publish_career_market_research",
+      { p_run_id: run.id, p_fallback_live_profile: fallbackLiveProfile }
+    );
+    if (publishError) {
+      throw new Error(`Could not publish career research: ${publishError.message}`);
+    }
+
+    const { data: publishedRun, error: refreshError } = await supabase
+      .from("career_research_runs")
+      .select("*")
+      .eq("id", run.id)
+      .single();
+    if (refreshError || !publishedRun) {
+      throw new Error("Publication completed but the audit record could not be reloaded.");
+    }
+
+    return NextResponse.json({
+      message: "Approved evidence published. Public data now resolves the Supabase version.",
+      run: publishedRun,
+      publication,
+      safeguards: { explicitPublish: true, atomic: true },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown career research publishing error.";
     return NextResponse.json({ error: message }, { status: errorStatus(message) });
   }
 }

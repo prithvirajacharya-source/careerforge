@@ -17,11 +17,14 @@ type ResearchRun = {
   reviewed_by?: string | null;
   reviewed_at?: string | null;
   review_notes?: string | null;
+  published_by?: string | null;
+  published_at?: string | null;
+  publication_version_id?: number | null;
   candidate_profile: CareerResearchCandidate;
   live_profile_snapshot: { salary?: { low?: number | null; typical?: number | null; high?: number | null } };
 };
 
-type ResearchResponse = { message?: string; error?: string; run?: ResearchRun; runs?: ResearchRun[] };
+type ResearchResponse = { message?: string; error?: string; run?: ResearchRun; runs?: ResearchRun[]; publication?: { versionId?: number } };
 
 function formatMoney(value: number | null | undefined, currency: string) {
   return value == null ? "Unavailable" : new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(value);
@@ -36,12 +39,14 @@ export default function CareerResearchConsole() {
   const [running, setRunning] = useState(false);
   const [reviewing, setReviewing] = useState(false);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [publishing, setPublishing] = useState(false);
+  const [confirmPublish, setConfirmPublish] = useState(false);
   const target = getCareerResearchTarget(careerSlug, countrySlug);
   const supported = Boolean(target?.enabled);
 
   const request = useCallback(async (
-    method: "GET" | "POST" | "PATCH",
-    reviewBody?: { runId: number; decision: "approve" | "reject"; reviewNotes: string }
+    method: "GET" | "POST" | "PATCH" | "PUT",
+    actionBody?: { runId: number; decision?: "approve" | "reject"; reviewNotes?: string }
   ) => {
     if (!target?.enabled) throw new Error("Automated research is not supported for this career-market combination.");
     const { data: { session } } = await supabase.auth.getSession();
@@ -53,7 +58,9 @@ export default function CareerResearchConsole() {
       body: method === "POST"
         ? JSON.stringify({ careerSlug: target.careerSlug, countrySlug: target.countrySlug })
         : method === "PATCH"
-          ? JSON.stringify(reviewBody)
+          ? JSON.stringify(actionBody)
+          : method === "PUT"
+            ? JSON.stringify({ runId: actionBody?.runId })
           : undefined,
     });
     const result = (await response.json()) as ResearchResponse;
@@ -131,8 +138,24 @@ export default function CareerResearchConsole() {
     } finally { setReviewing(false); }
   }
 
+  async function publishResearch() {
+    if (!selected || selected.status !== "approved" || selected.published_at || publishing) return;
+    setPublishing(true);
+    setMessage("Publishing approved evidence atomically...");
+    try {
+      const result = await request("PUT", { runId: selected.id });
+      setMessage(result.message ?? "Publication completed.");
+      if (result.run) setSelected(result.run);
+      setConfirmPublish(false);
+      await loadHistory();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Publication failed.");
+    } finally { setPublishing(false); }
+  }
+
   const candidate = selected?.candidate_profile;
   const liveSalary = selected?.live_profile_snapshot?.salary;
+  const publishingSupported = candidate?.careerSlug === "mechanical-engineer" && candidate?.countrySlug === "sweden";
 
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
@@ -152,7 +175,7 @@ export default function CareerResearchConsole() {
         <div className={`mt-4 rounded-xl border px-4 py-3 text-sm ${supported ? "border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-200" : "border-slate-400/15 bg-white/[0.025] text-slate-400"}`}>
           {supported ? `Automated research supported · ${target?.careerName} · ${target?.countryName} · ${target?.nativeCurrency}` : "Automated research is not yet supported for this combination. No fallback conversion or substitute market data will be used."}
         </div>
-        <div className="mt-6 rounded-2xl border border-amber-300/15 bg-amber-300/[0.04] p-4 text-sm leading-6 text-amber-100/80">Review only: this runner cannot publish or overwrite verified live data. Currency conversion is not accepted as local salary evidence.</div>
+        <div className="mt-6 rounded-2xl border border-amber-300/15 bg-amber-300/[0.04] p-4 text-sm leading-6 text-amber-100/80">Research and review never change live data. Only the separate, explicit publishing confirmation below can update the supported live profile. Currency conversion is not accepted as local salary evidence.</div>
         {message && <div className="mt-4 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-300">{message}</div>}
 
         {candidate && target ? <div className="mt-8">
@@ -178,12 +201,30 @@ export default function CareerResearchConsole() {
               </div>
             </div> : <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2"><div><dt className="font-bold text-slate-500">Reviewed at</dt><dd className="mt-1">{selected?.reviewed_at ? new Date(selected.reviewed_at).toLocaleString() : "Unavailable"}</dd></div><div><dt className="font-bold text-slate-500">Reviewed by</dt><dd className="mt-1 break-all">{selected?.reviewed_by ?? "Unavailable"}</dd></div>{selected?.review_notes && <div className="sm:col-span-2"><dt className="font-bold text-slate-500">Review notes</dt><dd className="mt-1 leading-6">{selected.review_notes}</dd></div>}</dl>}
           </div>
+          {selected?.status === "approved" && <div className="mt-6 rounded-2xl border border-fuchsia-300/25 bg-fuchsia-300/[0.055] p-5">
+            <div className="text-xs font-black uppercase tracking-[0.18em] text-fuchsia-200">Publishing decision</div>
+            <h4 className="mt-2 text-xl font-black">Current live → approved candidate</h4>
+            <p className="mt-2 text-sm leading-6 text-slate-400">Publishing is separate from approval. It writes a versioned Supabase live profile used by the public page; the TypeScript profile remains the fallback.</p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">{(["low", "typical", "high"] as const).map((key) => {
+              const changed = liveSalary?.[key] !== candidate.salary[key].value;
+              return <div key={key} className={`rounded-xl border p-4 ${changed ? "border-fuchsia-300/30 bg-fuchsia-300/[0.07]" : "border-white/10 bg-black/10"}`}><div className="text-xs font-black uppercase text-slate-500">{key}{changed ? " · changed" : ""}</div><div className="mt-2 text-sm text-slate-500">Current: {formatMoney(liveSalary?.[key], candidate.salary.sourceCurrency)}</div><div className="mt-1 font-black">Candidate: {formatMoney(candidate.salary[key].value, candidate.salary.sourceCurrency)}</div></div>;
+            })}</div>
+            <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
+              <div><dt className="font-bold text-slate-500">Native currency</dt><dd className="mt-1">{candidate.salary.sourceCurrency}</dd></div>
+              <div><dt className="font-bold text-slate-500">Geography</dt><dd className="mt-1">{candidate.salary.typical.provenance?.geography}</dd></div>
+              <div><dt className="font-bold text-slate-500">Observation period</dt><dd className="mt-1">{candidate.salary.typical.provenance?.observationPeriod}</dd></div>
+              <div><dt className="font-bold text-slate-500">Verification</dt><dd className="mt-1">{candidate.salary.verificationStatus}</dd></div>
+              <div className="sm:col-span-2"><dt className="font-bold text-slate-500">Source</dt><dd className="mt-1"><a className="text-blue-300 hover:underline" href={candidate.salary.typical.provenance?.sourceUrl} target="_blank" rel="noreferrer">{candidate.salary.typical.provenance?.sourceName}</a></dd></div>
+              <div className="sm:col-span-2"><dt className="font-bold text-slate-500">Methodology</dt><dd className="mt-1 leading-6">{candidate.salary.methodology.lowMeasure} / {candidate.salary.methodology.typicalMeasure} / {candidate.salary.methodology.highMeasure}. {candidate.salary.methodology.normalization}</dd></div>
+            </dl>
+            {selected.published_at ? <div className="mt-5 rounded-xl border border-emerald-300/20 bg-emerald-300/[0.07] p-4 text-sm text-emerald-100"><div className="font-black">Published</div><div className="mt-1">Version #{selected.publication_version_id} · {new Date(selected.published_at).toLocaleString()}</div><div className="mt-1 break-all text-emerald-200/70">By {selected.published_by}</div></div> : publishingSupported ? confirmPublish ? <div className="mt-5 rounded-xl border border-red-300/25 bg-red-300/[0.07] p-4"><div className="font-black text-red-100">This WILL change public SEKUR career data.</div><p className="mt-2 text-sm text-slate-300">The approved candidate becomes the live Mechanical Engineer · Sweden profile and an immutable before/after version is recorded.</p><div className="mt-4 flex flex-col gap-3 sm:flex-row"><button type="button" disabled={publishing} onClick={publishResearch} className="rounded-xl bg-red-300 px-5 py-3 font-black text-slate-950 disabled:opacity-50">{publishing ? "Publishing..." : "Confirm publication"}</button><button type="button" disabled={publishing} onClick={() => setConfirmPublish(false)} className="rounded-xl border border-white/15 px-5 py-3 font-bold">Cancel</button></div></div> : <button type="button" onClick={() => setConfirmPublish(true)} className="mt-5 rounded-xl bg-fuchsia-300 px-5 py-3 font-black text-slate-950">Publish approved evidence</button> : <p className="mt-5 text-sm text-slate-400">Publishing v1 is not enabled for this target.</p>}
+          </div>}
         </div> : <p className="mt-8 text-slate-500">{supported ? "No stored candidate for this selection yet. Run the research pipeline to create the first reviewable snapshot." : "Select Sweden to use the supported official SCB adapter for this career."}</p>}
       </section>
 
       <aside className="rounded-3xl border border-white/10 bg-[#091426] p-6">
         <h2 className="text-xl font-black">Research history</h2><p className="mt-2 text-sm leading-6 text-slate-500">Latest ten immutable snapshots for the selected career × country.</p>
-        <div className="mt-5 space-y-3">{runs.map((run) => <button key={run.id} type="button" onClick={() => setSelected(run)} className={`w-full rounded-xl border p-4 text-left ${selected?.id === run.id ? "border-blue-400/40 bg-blue-400/10" : "border-white/10 bg-white/[0.025]"}`}><div className="flex justify-between gap-3"><span className="font-bold">Run #{run.id}</span><span className="text-xs font-black uppercase text-amber-300">{run.status.replace("_", " ")}</span></div><div className="mt-2 text-xs text-slate-500">{new Date(run.researched_at || run.created_at).toLocaleString()}</div></button>)}{runs.length === 0 && <div className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No research history.</div>}</div>
+        <div className="mt-5 space-y-3">{runs.map((run) => <button key={run.id} type="button" onClick={() => { setSelected(run); setConfirmPublish(false); }} className={`w-full rounded-xl border p-4 text-left ${selected?.id === run.id ? "border-blue-400/40 bg-blue-400/10" : "border-white/10 bg-white/[0.025]"}`}><div className="flex justify-between gap-3"><span className="font-bold">Run #{run.id}</span><span className="text-xs font-black uppercase text-amber-300">{run.status.replace("_", " ")}{run.published_at ? " · published" : ""}</span></div><div className="mt-2 text-xs text-slate-500">{new Date(run.researched_at || run.created_at).toLocaleString()}</div></button>)}{runs.length === 0 && <div className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No research history.</div>}</div>
       </aside>
     </div>
   );

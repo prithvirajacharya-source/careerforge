@@ -8,6 +8,7 @@ import SiteHeader from "@/components/SiteHeader";
 import { educationSummary } from "@/lib/careerModel";
 import type { CareerCountryMarket } from "@/lib/careerCountryModel";
 import { getCareerCountryProfiles } from "@/lib/careerCountryProfiles";
+import { resolveCareerCountryProfile } from "@/lib/careerMarketProfiles";
 import { getCareerProfile } from "@/lib/careerProfiles";
 import { getCountries } from "@/lib/countries";
 
@@ -85,9 +86,9 @@ export default async function CareerPage({
   const selectedCountrySlug = marketProfiles.some((profile) => profile.countrySlug === requestedCountry)
     ? requestedCountry as string
     : defaultCountrySlug;
-  const selectedMarketProfile = marketProfiles.find(
-    (profile) => profile.countrySlug === selectedCountrySlug
-  ) ?? null;
+  const selectedMarketProfile = selectedCountrySlug
+    ? await resolveCareerCountryProfile(slug, selectedCountrySlug)
+    : null;
   const selectedMarket = markets.find((market) => market.slug === selectedCountrySlug);
   const salary = selectedMarketProfile?.salary ?? career.salary;
   const educationProfile = selectedMarketProfile
