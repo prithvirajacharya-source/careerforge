@@ -1,11 +1,15 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import CareerCountrySelector from "@/components/CareerCountrySelector";
+import MarketSalary, { MarketSalaryValue } from "@/components/MarketSalary";
 import ScoreCard from "@/components/ScoreCard";
-import Money from "@/components/Money";
 import SalaryRange from "@/components/SalaryRange";
 import SiteHeader from "@/components/SiteHeader";
 import { educationSummary } from "@/lib/careerModel";
+import type { CareerCountryMarket } from "@/lib/careerCountryModel";
+import { getCareerCountryProfiles } from "@/lib/careerCountryProfiles";
 import { getCareerProfile } from "@/lib/careerProfiles";
+import { getCountries } from "@/lib/countries";
 
 function Metric({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -25,8 +29,15 @@ function ResearchBadge({ status }: { status: "verified" | "estimated" | "needs-r
   );
 }
 
-export default async function CareerPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function CareerPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ country?: string }>;
+}) {
   const { slug } = await params;
+  const { country: requestedCountry } = await searchParams;
   const career = getCareerProfile(slug);
 
   if (!career) {
@@ -47,12 +58,57 @@ export default async function CareerPage({ params }: { params: Promise<{ slug: s
     );
   }
 
-  const education = educationSummary(career.education, career.legacyEducationLabel);
-  const salaryValue = career.salary ? (
+  const marketProfiles = getCareerCountryProfiles(slug);
+  const countryRows = marketProfiles.length > 0 ? await getCountries() : [];
+  const marketFallbacks: Record<string, CareerCountryMarket> = {
+    "united-states": { slug: "united-states", name: "United States", code: "US", currency: "USD" },
+    sweden: { slug: "sweden", name: "Sweden", code: "SE", currency: "SEK" },
+    germany: { slug: "germany", name: "Germany", code: "DE", currency: "EUR" },
+  };
+  const markets = marketProfiles.map((profile) => {
+    const country = countryRows.find((row) => row.slug === profile.countrySlug);
+    return country
+      ? {
+          slug: country.slug as string,
+          name: country.name as string,
+          code: country.code as string,
+          currency: (country.currency as string | null) ?? null,
+        }
+      : marketFallbacks[profile.countrySlug];
+  }).filter(Boolean) as CareerCountryMarket[];
+  const defaultCountrySlug = marketProfiles.some((profile) => profile.countrySlug === "united-states")
+    ? "united-states"
+    : marketProfiles[0]?.countrySlug;
+  const selectedCountrySlug = marketProfiles.some((profile) => profile.countrySlug === requestedCountry)
+    ? requestedCountry as string
+    : defaultCountrySlug;
+  const selectedMarketProfile = marketProfiles.find(
+    (profile) => profile.countrySlug === selectedCountrySlug
+  ) ?? null;
+  const selectedMarket = markets.find((market) => market.slug === selectedCountrySlug);
+  const salary = selectedMarketProfile?.salary ?? career.salary;
+  const educationProfile = selectedMarketProfile
+    ? selectedMarketProfile.education
+    : career.education;
+  const education = selectedMarketProfile && !educationProfile
+    ? "Country-specific guidance coming soon"
+    : educationSummary(educationProfile, career.legacyEducationLabel);
+  const salaryValue = selectedMarketProfile ? (
+    <MarketSalary salary={selectedMarketProfile.salary} />
+  ) : career.salary ? (
     <SalaryRange salary={career.salary} />
   ) : (
     career.legacySalaryLabel ?? "Research required"
   );
+  const hiring = selectedMarketProfile
+    ? selectedMarketProfile.hiringOutlook.value ?? "Unavailable"
+    : career.hiring;
+  const demand = selectedMarketProfile
+    ? selectedMarketProfile.demand.value ?? "Unavailable"
+    : career.demand;
+  const employmentRisk = selectedMarketProfile
+    ? selectedMarketProfile.employmentRisk.value ?? "Unavailable"
+    : career.layoffs;
 
   return (
     <main className="min-h-screen bg-[#07101f] text-white">
@@ -63,10 +119,17 @@ export default async function CareerPage({ params }: { params: Promise<{ slug: s
             <div className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">{career.category}</div>
             <h1 className="mt-4 text-5xl font-black tracking-tight md:text-7xl">{career.title}</h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-400">{career.description}</p>
+            {selectedMarketProfile && selectedMarket && (
+              <CareerCountrySelector
+                careerTitle={career.title}
+                markets={markets}
+                selectedCountrySlug={selectedCountrySlug}
+              />
+            )}
           </div>
           <ScoreCard title="SEKUR Career Score" score={career.score} items={[
             { label: "Salary", value: salaryValue },
-            { label: "Hiring", value: career.hiring },
+            { label: "Hiring", value: hiring },
             { label: "AI Risk", value: career.aiRisk },
             { label: "Remote Work", value: career.remote },
           ]} />
@@ -75,16 +138,16 @@ export default async function CareerPage({ params }: { params: Promise<{ slug: s
 
       <section className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-6 md:grid-cols-4">
         <Metric label="Salary" value={salaryValue} />
-        <Metric label="Hiring" value={career.hiring} />
-        <Metric label="Layoff risk" value={career.layoffs} />
+        <Metric label="Hiring" value={hiring} />
+        <Metric label="Employment risk" value={employmentRisk} />
         <Metric label="AI risk" value={career.aiRisk} />
         <Metric label="Remote" value={career.remote} />
-        <Metric label="Demand" value={career.demand} />
+        <Metric label="Demand" value={demand} />
         <Metric label="Work-life" value={career.workLife} />
         <Metric label="Education" value={education} />
       </section>
 
-      {career.salary && (
+      {salary && (
         <section className="mx-auto max-w-7xl px-6 pt-12">
           <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-7">
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -92,26 +155,60 @@ export default async function CareerPage({ params }: { params: Promise<{ slug: s
                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">Salary evidence</p>
                 <h2 className="mt-2 text-2xl font-black">Low, typical and high annual pay</h2>
               </div>
-              <ResearchBadge status={career.salary.verificationStatus} />
+              <ResearchBadge status={salary.verificationStatus} />
             </div>
-            {career.salary.verificationStatus === "needs-research" ? (
+            {salary.verificationStatus === "needs-research" ? (
               <p className="mt-5 text-slate-400">
                 No validated salary range is stored yet. SEKUR will publish values only after geography, source, observation date and methodology are verified.
               </p>
             ) : (
               <div className="mt-6 grid gap-4 md:grid-cols-3">
-                <Metric label="Low" value={<Money amount={career.salary.low as number} sourceCurrency={career.salary.sourceCurrency as string} compact />} />
-                <Metric label="Typical" value={<Money amount={career.salary.typical as number} sourceCurrency={career.salary.sourceCurrency as string} compact />} />
-                <Metric label="High" value={<Money amount={career.salary.high as number} sourceCurrency={career.salary.sourceCurrency as string} compact />} />
+                <Metric label="Low" value={<MarketSalaryValue amount={salary.low} salary={salary} />} />
+                <Metric label="Typical" value={<MarketSalaryValue amount={salary.typical} salary={salary} />} />
+                <Metric label="High" value={<MarketSalaryValue amount={salary.high} salary={salary} />} />
               </div>
             )}
             <dl className="mt-6 grid gap-4 text-sm md:grid-cols-2 lg:grid-cols-4">
-              <div><dt className="text-slate-500">Geography</dt><dd className="mt-1 font-semibold">{career.salary.geography ?? "Needs research"}</dd></div>
-              <div><dt className="text-slate-500">Source</dt><dd className="mt-1 font-semibold">{career.salary.sourceUrl && career.salary.sourceName ? <a href={career.salary.sourceUrl} target="_blank" rel="noreferrer" className="text-blue-300 hover:text-blue-200">{career.salary.sourceName}</a> : "Needs research"}</dd></div>
-              <div><dt className="text-slate-500">Observed</dt><dd className="mt-1 font-semibold">{career.salary.observationDate ?? "Needs research"}</dd></div>
-              <div><dt className="text-slate-500">Methodology</dt><dd className="mt-1 font-semibold">{career.salary.methodology ?? "Needs research"}</dd></div>
+              <div><dt className="text-slate-500">Labour market</dt><dd className="mt-1 font-semibold">{salary.geography ?? "Unavailable"}</dd></div>
+              <div><dt className="text-slate-500">Source</dt><dd className="mt-1 font-semibold">{salary.sourceUrl && salary.sourceName ? <a href={salary.sourceUrl} target="_blank" rel="noreferrer" className="text-blue-300 hover:text-blue-200">{salary.sourceName}</a> : "Unavailable"}</dd></div>
+              <div><dt className="text-slate-500">Observed</dt><dd className="mt-1 font-semibold">{salary.observationDate ?? "Unavailable"}</dd></div>
+              <div><dt className="text-slate-500">Methodology</dt><dd className="mt-1 font-semibold">{salary.methodology ?? "Unavailable"}</dd></div>
             </dl>
           </div>
+        </section>
+      )}
+
+      {selectedMarketProfile && (
+        <section className="mx-auto max-w-7xl px-6 pt-12">
+          <div className="grid gap-4 lg:grid-cols-3">
+            {[
+              ["Hiring outlook", selectedMarketProfile.hiringOutlook],
+              ["Demand", selectedMarketProfile.demand],
+              ["Employment risk", selectedMarketProfile.employmentRisk],
+            ].map(([label, field]) => {
+              const marketField = field as typeof selectedMarketProfile.hiringOutlook;
+              return (
+                <div key={label as string} className="rounded-2xl border border-white/10 bg-white/[0.035] p-6">
+                  <div className="text-xs font-bold uppercase tracking-[0.15em] text-slate-500">{label as string}</div>
+                  <div className="mt-3 text-lg font-bold">{marketField.value ?? "Not currently available"}</div>
+                  {marketField.sourceUrl && marketField.sourceName && (
+                    <a href={marketField.sourceUrl} target="_blank" rel="noreferrer" className="mt-4 block text-sm font-semibold text-blue-300 hover:text-blue-200">
+                      {marketField.sourceName}
+                    </a>
+                  )}
+                  {marketField.observationPeriod && <div className="mt-2 text-xs text-slate-500">{marketField.observationPeriod}</div>}
+                </div>
+              );
+            })}
+          </div>
+          {selectedMarketProfile.notes.length > 0 && (
+            <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.025] p-6">
+              <div className="text-xs font-bold uppercase tracking-[0.15em] text-slate-500">Important market notes</div>
+              <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-400">
+                {selectedMarketProfile.notes.map((note) => <li key={note}>{note}</li>)}
+              </ul>
+            </div>
+          )}
         </section>
       )}
 
@@ -120,15 +217,15 @@ export default async function CareerPage({ params }: { params: Promise<{ slug: s
           <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-7">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <h2 className="text-3xl font-black">Education and pathways</h2>
-              {career.education && <ResearchBadge status={career.education.verificationStatus} />}
+              {educationProfile && <ResearchBadge status={educationProfile.verificationStatus} />}
             </div>
-            {career.education ? (
+            {educationProfile ? (
               <dl className="mt-7 space-y-6">
-                <div><dt className="text-sm text-slate-500">Typical education</dt><dd className="mt-1 font-semibold">{career.education.typicalEducation ?? "Needs verified research"}</dd></div>
-                <div><dt className="text-sm text-slate-500">Degree requirement</dt><dd className="mt-1 font-semibold">{career.education.degreeRequirement ?? "Needs verified research"}</dd></div>
-                <div><dt className="text-sm text-slate-500">Common fields</dt><dd className="mt-2 text-slate-300">{career.education.commonFields.join(", ") || "Needs verified research"}</dd></div>
-                <div><dt className="text-sm text-slate-500">Alternative pathways</dt><dd className="mt-2 text-slate-300">{career.education.alternativePathways.join(", ") || "Needs verified research"}</dd></div>
-                <div><dt className="text-sm text-slate-500">Relevant certifications</dt><dd className="mt-2 text-slate-300">{career.education.certifications.join(", ") || "Needs verified research"}</dd></div>
+                <div><dt className="text-sm text-slate-500">Typical education</dt><dd className="mt-1 font-semibold">{educationProfile.typicalEducation ?? "Not currently available"}</dd></div>
+                <div><dt className="text-sm text-slate-500">Degree requirement</dt><dd className="mt-1 font-semibold">{educationProfile.degreeRequirement ?? "Not currently available"}</dd></div>
+                <div><dt className="text-sm text-slate-500">Common fields</dt><dd className="mt-2 text-slate-300">{educationProfile.commonFields.join(", ") || "Not currently available"}</dd></div>
+                <div><dt className="text-sm text-slate-500">Alternative pathways</dt><dd className="mt-2 text-slate-300">{educationProfile.alternativePathways.join(", ") || "Not currently available"}</dd></div>
+                <div><dt className="text-sm text-slate-500">Relevant certifications</dt><dd className="mt-2 text-slate-300">{educationProfile.certifications.join(", ") || "Not currently available"}</dd></div>
               </dl>
             ) : <p className="mt-5 text-slate-400">Legacy profile: {education}</p>}
           </div>
@@ -158,6 +255,7 @@ export default async function CareerPage({ params }: { params: Promise<{ slug: s
         </div>
       </section>
 
+      {marketProfiles.length === 0 && (
       <section className="mx-auto max-w-7xl px-6 py-16">
         <h2 className="text-3xl font-black">Where this career performs best</h2>
         <div className="mt-6 overflow-hidden rounded-2xl border border-white/10">
@@ -168,6 +266,7 @@ export default async function CareerPage({ params }: { params: Promise<{ slug: s
           ))}
         </div>
       </section>
+      )}
     </main>
   );
 }

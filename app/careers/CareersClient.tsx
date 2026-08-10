@@ -77,7 +77,7 @@ export default function CareersClient({ careers }: { careers: CareerListRecord[]
                 <div className="rounded-xl bg-black/20 p-4"><div className="text-xs text-slate-500">Remote</div><div className="mt-1 font-bold">{career.remote_work ?? "Not rated"}</div></div>
               </div>
               <div className="mt-5 space-y-4 border-t border-white/10 pt-5 text-sm">
-                {career.profile?.salary && <div className="flex items-start justify-between gap-4"><span className="text-slate-500">Salary</span><span className="text-right font-semibold"><SalaryRange salary={career.profile.salary} showTypical={false} /></span></div>}
+                {career.profile?.salary && <div className="flex items-start justify-between gap-4"><span className="text-slate-500">U.S. base salary</span><span className="text-right font-semibold"><SalaryRange salary={career.profile.salary} showTypical={false} /></span></div>}
                 <div className="flex items-start justify-between gap-4"><span className="text-slate-500">Education</span><span className="text-right font-semibold">{educationSummary(career.profile?.education ?? null, career.education)}</span></div>
               </div>
               <Link href={`/careers/${career.slug}`} className="mt-6 block w-full rounded-xl border border-white/10 bg-white/5 py-3 text-center text-sm font-bold transition group-hover:border-blue-400/30 group-hover:bg-blue-400/10">View career intelligence {"\u2192"}</Link>
