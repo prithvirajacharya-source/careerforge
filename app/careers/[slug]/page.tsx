@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import CareerCountrySelector from "@/components/CareerCountrySelector";
-import MarketSalary, { MarketSalaryValue } from "@/components/MarketSalary";
+import MarketSalary, { SalaryComparison } from "@/components/MarketSalary";
 import ScoreCard from "@/components/ScoreCard";
 import SalaryRange from "@/components/SalaryRange";
 import SiteHeader from "@/components/SiteHeader";
@@ -21,9 +21,12 @@ function Metric({ label, value }: { label: string; value: ReactNode }) {
 }
 
 function ResearchBadge({ status }: { status: "verified" | "estimated" | "needs-research" }) {
-  const label = status === "needs-research" ? "Needs verified research" : status;
+  const label = status === "verified" ? "Verified source" : status === "estimated" ? "Estimated" : "Coming soon";
+  const className = status === "verified"
+    ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+    : "border-white/10 bg-white/5 text-slate-400";
   return (
-    <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-amber-300">
+    <span className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${className}`}>
       {label}
     </span>
   );
@@ -101,23 +104,30 @@ export default async function CareerPage({
     career.legacySalaryLabel ?? "Research required"
   );
   const hiring = selectedMarketProfile
-    ? selectedMarketProfile.hiringOutlook.value ?? "Unavailable"
+    ? selectedMarketProfile.hiringOutlook.value ?? "Not published"
     : career.hiring;
   const demand = selectedMarketProfile
-    ? selectedMarketProfile.demand.value ?? "Unavailable"
+    ? selectedMarketProfile.demand.value ?? "Not published"
     : career.demand;
   const employmentRisk = selectedMarketProfile
-    ? selectedMarketProfile.employmentRisk.value ?? "Unavailable"
+    ? selectedMarketProfile.employmentRisk.value ?? "Not published"
     : career.layoffs;
 
   return (
     <main className="min-h-screen bg-[#07101f] text-white">
       <SiteHeader />
-      <section className="mx-auto max-w-7xl px-6 pb-14 pt-16">
+      <section className="mx-auto max-w-7xl px-5 pb-12 pt-12 sm:px-6 sm:pb-14 sm:pt-16">
         <div className="grid gap-10 lg:grid-cols-[1fr_360px] lg:items-end">
           <div className="max-w-4xl">
             <div className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">{career.category}</div>
-            <h1 className="mt-4 text-5xl font-black tracking-tight md:text-7xl">{career.title}</h1>
+            <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl md:text-7xl">
+              {career.title}
+              {selectedMarket && (
+                <span className="mt-2 block text-blue-300 md:text-[0.72em]">
+                  {"\u00B7"} {selectedMarket.name}
+                </span>
+              )}
+            </h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-400">{career.description}</p>
             {selectedMarketProfile && selectedMarket && (
               <CareerCountrySelector
@@ -136,7 +146,7 @@ export default async function CareerPage({
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-6 md:grid-cols-4">
+      <section className={`mx-auto grid max-w-7xl gap-4 px-5 sm:px-6 ${selectedMarketProfile ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" : "grid-cols-2 md:grid-cols-4"}`}>
         <Metric label="Salary" value={salaryValue} />
         <Metric label="Hiring" value={hiring} />
         <Metric label="Employment risk" value={employmentRisk} />
@@ -149,31 +159,40 @@ export default async function CareerPage({
 
       {salary && (
         <section className="mx-auto max-w-7xl px-6 pt-12">
-          <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-7">
-            <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-5 sm:p-7">
+            <div>
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">Salary evidence</p>
-                <h2 className="mt-2 text-2xl font-black">Low, typical and high annual pay</h2>
+                <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">Annual salary</p>
+                <h2 className="mt-2 text-2xl font-black">Compare the market range</h2>
               </div>
-              <ResearchBadge status={salary.verificationStatus} />
             </div>
             {salary.verificationStatus === "needs-research" ? (
               <p className="mt-5 text-slate-400">
                 No validated salary range is stored yet. SEKUR will publish values only after geography, source, observation date and methodology are verified.
               </p>
             ) : (
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
-                <Metric label="Low" value={<MarketSalaryValue amount={salary.low} salary={salary} />} />
-                <Metric label="Typical" value={<MarketSalaryValue amount={salary.typical} salary={salary} />} />
-                <Metric label="High" value={<MarketSalaryValue amount={salary.high} salary={salary} />} />
-              </div>
+              <SalaryComparison
+                salary={salary}
+                explainUnavailableHigh={selectedCountrySlug === "germany" && salary.high === null}
+              />
             )}
-            <dl className="mt-6 grid gap-4 text-sm md:grid-cols-2 lg:grid-cols-4">
-              <div><dt className="text-slate-500">Labour market</dt><dd className="mt-1 font-semibold">{salary.geography ?? "Unavailable"}</dd></div>
-              <div><dt className="text-slate-500">Source</dt><dd className="mt-1 font-semibold">{salary.sourceUrl && salary.sourceName ? <a href={salary.sourceUrl} target="_blank" rel="noreferrer" className="text-blue-300 hover:text-blue-200">{salary.sourceName}</a> : "Unavailable"}</dd></div>
-              <div><dt className="text-slate-500">Observed</dt><dd className="mt-1 font-semibold">{salary.observationDate ?? "Unavailable"}</dd></div>
-              <div><dt className="text-slate-500">Methodology</dt><dd className="mt-1 font-semibold">{salary.methodology ?? "Unavailable"}</dd></div>
+            {selectedMarketProfile && (
+              <p className="mt-5 rounded-xl border border-blue-400/10 bg-blue-400/5 px-4 py-3 text-sm leading-6 text-slate-400">
+                Changing the global currency changes only how these amounts are displayed. The underlying salary data remains from the {selectedMarket?.name} labour market in {salary.sourceCurrency}.
+              </p>
+            )}
+            <dl className="mt-6 grid gap-5 border-t border-white/10 pt-6 text-sm sm:grid-cols-2 xl:grid-cols-4">
+              <div><dt className="text-slate-500">Geography</dt><dd className="mt-1 font-semibold leading-6">{salary.geography ?? "Unavailable"}</dd></div>
+              <div><dt className="text-slate-500">Source</dt><dd className="mt-1 font-semibold leading-6">{salary.sourceUrl && salary.sourceName ? <a href={salary.sourceUrl} target="_blank" rel="noreferrer" className="text-blue-300 hover:text-blue-200">{salary.sourceName}</a> : "Unavailable"}</dd></div>
+              <div><dt className="text-slate-500">Observation period</dt><dd className="mt-1 font-semibold leading-6">{salary.observationDate ?? "Unavailable"}</dd></div>
+              <div><dt className="text-slate-500">Status</dt><dd className="mt-2"><ResearchBadge status={salary.verificationStatus} /></dd></div>
             </dl>
+            {salary.methodology && (
+              <details className="mt-5 border-t border-white/10 pt-5 text-sm">
+                <summary className="cursor-pointer font-semibold text-slate-300">How this range is calculated</summary>
+                <p className="mt-3 max-w-4xl leading-6 text-slate-500">{salary.methodology}</p>
+              </details>
+            )}
           </div>
         </section>
       )}
@@ -190,7 +209,14 @@ export default async function CareerPage({
               return (
                 <div key={label as string} className="rounded-2xl border border-white/10 bg-white/[0.035] p-6">
                   <div className="text-xs font-bold uppercase tracking-[0.15em] text-slate-500">{label as string}</div>
-                  <div className="mt-3 text-lg font-bold">{marketField.value ?? "Not currently available"}</div>
+                  <div className={`mt-3 text-lg font-bold ${marketField.value ? "text-white" : "text-slate-300"}`}>
+                    {marketField.value ?? "Not published for this market"}
+                  </div>
+                  {!marketField.value && (
+                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                      SEKUR will show this when credible country-specific evidence is available.
+                    </p>
+                  )}
                   {marketField.sourceUrl && marketField.sourceName && (
                     <a href={marketField.sourceUrl} target="_blank" rel="noreferrer" className="mt-4 block text-sm font-semibold text-blue-300 hover:text-blue-200">
                       {marketField.sourceName}

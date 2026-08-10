@@ -51,3 +51,44 @@ export default function MarketSalary({ salary }: { salary: SalaryResearch }) {
     </span>
   );
 }
+
+export function SalaryComparison({
+  salary,
+  explainUnavailableHigh = false,
+}: {
+  salary: SalaryResearch;
+  explainUnavailableHigh?: boolean;
+}) {
+  const values = [
+    { label: "Low", amount: salary.low },
+    { label: "Typical", amount: salary.typical, featured: true },
+    { label: "High", amount: salary.high },
+  ];
+
+  return (
+    <div className="mt-6 grid gap-3 sm:grid-cols-3">
+      {values.map((item) => (
+        <div
+          key={item.label}
+          className={
+            item.featured
+              ? "rounded-2xl border border-blue-400/30 bg-blue-400/10 p-5"
+              : "rounded-2xl border border-white/10 bg-black/15 p-5"
+          }
+        >
+          <div className={item.featured ? "text-xs font-bold uppercase tracking-[0.16em] text-blue-300" : "text-xs font-bold uppercase tracking-[0.16em] text-slate-500"}>
+            {item.label}
+          </div>
+          <div className="mt-3 text-2xl font-black sm:text-xl lg:text-2xl">
+            <MarketSalaryValue amount={item.amount} salary={salary} />
+          </div>
+          {item.label === "High" && item.amount === null && explainUnavailableHigh && (
+            <p className="mt-3 text-xs leading-5 text-slate-500">
+              The official source reports only an upper threshold, not an exact value.
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
