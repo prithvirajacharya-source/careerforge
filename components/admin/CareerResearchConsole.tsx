@@ -14,6 +14,9 @@ type ResearchRun = {
   status: string;
   researched_at: string;
   created_at: string;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  review_notes?: string | null;
   candidate_profile: CareerResearchCandidate;
   live_profile_snapshot: { salary?: { low?: number | null; typical?: number | null; high?: number | null } };
 };
@@ -31,18 +34,27 @@ export default function CareerResearchConsole() {
   const [selected, setSelected] = useState<ResearchRun | null>(null);
   const [message, setMessage] = useState("");
   const [running, setRunning] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
+  const [reviewNotes, setReviewNotes] = useState("");
   const target = getCareerResearchTarget(careerSlug, countrySlug);
   const supported = Boolean(target?.enabled);
 
-  const request = useCallback(async (method: "GET" | "POST") => {
+  const request = useCallback(async (
+    method: "GET" | "POST" | "PATCH",
+    reviewBody?: { runId: number; decision: "approve" | "reject"; reviewNotes: string }
+  ) => {
     if (!target?.enabled) throw new Error("Automated research is not supported for this career-market combination.");
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error("Admin session not found. Please sign in again.");
     const query = new URLSearchParams({ careerSlug: target.careerSlug, countrySlug: target.countrySlug });
     const response = await fetch(`/api/research/career-market?${query}`, {
       method,
-      headers: { Authorization: `Bearer ${session.access_token}`, ...(method === "POST" ? { "Content-Type": "application/json" } : {}) },
-      body: method === "POST" ? JSON.stringify({ careerSlug: target.careerSlug, countrySlug: target.countrySlug }) : undefined,
+      headers: { Authorization: `Bearer ${session.access_token}`, ...(method !== "GET" ? { "Content-Type": "application/json" } : {}) },
+      body: method === "POST"
+        ? JSON.stringify({ careerSlug: target.careerSlug, countrySlug: target.countrySlug })
+        : method === "PATCH"
+          ? JSON.stringify(reviewBody)
+          : undefined,
     });
     const result = (await response.json()) as ResearchResponse;
     if (!response.ok) throw new Error(result.error ?? `Research request failed with HTTP ${response.status}.`);
@@ -104,6 +116,21 @@ export default function CareerResearchConsole() {
     } finally { setRunning(false); }
   }
 
+  async function reviewResearch(decision: "approve" | "reject") {
+    if (!selected || selected.status !== "pending_review" || reviewing) return;
+    setReviewing(true);
+    setMessage(decision === "approve" ? "Approving research review..." : "Rejecting research review...");
+    try {
+      const result = await request("PATCH", { runId: selected.id, decision, reviewNotes });
+      setMessage(result.message ?? "Review completed.");
+      if (result.run) setSelected(result.run);
+      setReviewNotes("");
+      await loadHistory();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Review failed.");
+    } finally { setReviewing(false); }
+  }
+
   const candidate = selected?.candidate_profile;
   const liveSalary = selected?.live_profile_snapshot?.salary;
 
@@ -129,7 +156,7 @@ export default function CareerResearchConsole() {
         {message && <div className="mt-4 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-300">{message}</div>}
 
         {candidate && target ? <div className="mt-8">
-          <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="text-xl font-black">Candidate preview</h3><span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-200">Pending review</span></div>
+          <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="text-xl font-black">Candidate vs current live profile</h3><span className={`rounded-full border px-3 py-1 text-xs font-black uppercase tracking-wider ${selected?.status === "approved" ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-200" : selected?.status === "rejected" ? "border-red-300/20 bg-red-300/10 text-red-200" : "border-amber-300/20 bg-amber-300/10 text-amber-200"}`}>{selected?.status.replace("_", " ")}</span></div>
           <div className="mt-5 grid gap-3 sm:grid-cols-3">{(["low", "typical", "high"] as const).map((key) => <div key={key} className="rounded-2xl border border-white/10 bg-[#091426] p-5"><div className="text-xs font-black uppercase tracking-wider text-slate-500">{key}</div><div className="mt-2 text-xl font-black">{formatMoney(candidate.salary[key].value, target.nativeCurrency)}</div><div className="mt-2 text-xs text-slate-500">Live: {formatMoney(liveSalary?.[key], target.nativeCurrency)}</div></div>)}</div>
           <dl className="mt-6 grid gap-5 text-sm sm:grid-cols-2">
             <div><dt className="font-bold text-slate-500">Native currency</dt><dd className="mt-1">{candidate.salary.sourceCurrency}</dd></div>
@@ -140,6 +167,17 @@ export default function CareerResearchConsole() {
             <div className="sm:col-span-2"><dt className="font-bold text-slate-500">Source</dt><dd className="mt-1"><a className="text-blue-300 hover:underline" href={candidate.salary.typical.provenance?.sourceUrl} target="_blank" rel="noreferrer">{candidate.salary.typical.provenance?.sourceName}</a></dd></div>
           </dl>
           <div className="mt-6 grid gap-3 sm:grid-cols-2">{["Hiring outlook", "Demand", "Employment risk", "Education/pathway"].map((label) => <div key={label} className="rounded-xl border border-white/10 bg-white/[0.025] p-4"><div className="font-bold">{label}</div><div className="mt-1 text-sm text-slate-500">Unavailable — no evidence inferred</div></div>)}</div>
+          <div className="mt-6 rounded-2xl border border-blue-300/20 bg-blue-300/[0.05] p-5">
+            <div className="font-black text-blue-200">Approval is review only — it does not publish</div>
+            <p className="mt-2 text-sm leading-6 text-slate-400">Approving records that an admin accepts this evidence for a future publishing workflow. It cannot change source files, Supabase live career data, or public career pages.</p>
+            {selected?.status === "pending_review" ? <div className="mt-5">
+              <label className="text-sm font-bold text-slate-300">Review notes <span className="font-normal text-slate-500">(optional)</span><textarea value={reviewNotes} onChange={(event) => setReviewNotes(event.target.value)} maxLength={2000} rows={3} placeholder="Why are you approving or rejecting this evidence?" className="mt-2 w-full resize-y rounded-xl border border-white/10 bg-[#07101f] px-4 py-3 text-white outline-none focus:border-blue-300/40" /></label>
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                <button type="button" disabled={reviewing} onClick={() => reviewResearch("approve")} className="rounded-xl bg-emerald-300 px-5 py-3 font-black text-slate-950 disabled:opacity-50">{reviewing ? "Reviewing..." : "Approve evidence"}</button>
+                <button type="button" disabled={reviewing} onClick={() => reviewResearch("reject")} className="rounded-xl border border-red-300/30 bg-red-300/10 px-5 py-3 font-black text-red-200 disabled:opacity-50">Reject evidence</button>
+              </div>
+            </div> : <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2"><div><dt className="font-bold text-slate-500">Reviewed at</dt><dd className="mt-1">{selected?.reviewed_at ? new Date(selected.reviewed_at).toLocaleString() : "Unavailable"}</dd></div><div><dt className="font-bold text-slate-500">Reviewed by</dt><dd className="mt-1 break-all">{selected?.reviewed_by ?? "Unavailable"}</dd></div>{selected?.review_notes && <div className="sm:col-span-2"><dt className="font-bold text-slate-500">Review notes</dt><dd className="mt-1 leading-6">{selected.review_notes}</dd></div>}</dl>}
+          </div>
         </div> : <p className="mt-8 text-slate-500">{supported ? "No stored candidate for this selection yet. Run the research pipeline to create the first reviewable snapshot." : "Select Sweden to use the supported official SCB adapter for this career."}</p>}
       </section>
 

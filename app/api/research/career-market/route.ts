@@ -3,12 +3,23 @@ import { authenticateCareerResearchAdmin } from "@/lib/careerResearch/auth";
 import { getCareerResearchTarget } from "@/lib/careerResearch/registry";
 import { collectCareerResearch } from "@/lib/careerResearch/runner";
 import { getCareerCountryProfile } from "@/lib/careerCountryProfiles";
+import {
+  createCareerResearchReviewUpdate,
+  type CareerResearchDecision,
+} from "@/lib/careerResearch/review";
+import type { CareerResearchRunStatus } from "@/lib/careerResearch/model";
 
 type ResearchRequest = { careerSlug?: string; countrySlug?: string };
+type ReviewRequest = {
+  runId?: number;
+  decision?: CareerResearchDecision;
+  reviewNotes?: string | null;
+};
 
 function errorStatus(message: string) {
   if (message.includes("Authenticated")) return 401;
   if (message.includes("admin access")) return 403;
+  if (message.includes("already been reviewed")) return 409;
   return 400;
 }
 
@@ -90,6 +101,63 @@ export async function POST(request: Request) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown career research error.";
     console.error("Career research runner failed:", error);
+    return NextResponse.json({ error: message }, { status: errorStatus(message) });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const { supabase, user } = await authenticateCareerResearchAdmin(request);
+    const body = (await request.json().catch(() => ({}))) as ReviewRequest;
+
+    if (!Number.isInteger(body.runId) || Number(body.runId) <= 0) {
+      throw new Error("A valid research run ID is required.");
+    }
+    if (body.decision !== "approve" && body.decision !== "reject") {
+      throw new Error("Review decision must be approve or reject.");
+    }
+
+    const { data: currentRun, error: loadError } = await supabase
+      .from("career_research_runs")
+      .select("id,status")
+      .eq("id", body.runId)
+      .single();
+
+    if (loadError || !currentRun) {
+      throw new Error("Career research run was not found.");
+    }
+
+    const update = createCareerResearchReviewUpdate(
+      { id: currentRun.id, status: currentRun.status as CareerResearchRunStatus },
+      body.decision,
+      user.id,
+      body.reviewNotes
+    );
+
+    const { data: reviewedRun, error: updateError } = await supabase
+      .from("career_research_runs")
+      .update(update)
+      .eq("id", currentRun.id)
+      .eq("status", "pending_review")
+      .select()
+      .maybeSingle();
+
+    if (updateError) {
+      throw new Error(`Could not review career research run: ${updateError.message}`);
+    }
+    if (!reviewedRun) {
+      throw new Error("This research run has already been reviewed.");
+    }
+
+    return NextResponse.json({
+      message: body.decision === "approve"
+        ? "Research approved for future publishing review. Live data was not changed."
+        : "Research rejected. Live data was not changed.",
+      run: reviewedRun,
+      safeguards: { liveDataChanged: false, publishAvailable: false },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown career research review error.";
     return NextResponse.json({ error: message }, { status: errorStatus(message) });
   }
 }

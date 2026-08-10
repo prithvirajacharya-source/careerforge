@@ -44,9 +44,8 @@ export type CareerResearchCandidate = {
 
 export type CareerResearchRunStatus =
   | "pending_review"
-  | "reviewed"
+  | "approved"
   | "rejected"
-  | "published"
   | "failed";
 
 export function unavailableMetric<T>(): ResearchedMetric<T> {

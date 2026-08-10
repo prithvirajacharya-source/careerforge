@@ -1,5 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
 
+export function assertCareerResearchAdmin(user: {
+  app_metadata?: Record<string, unknown>;
+} | null) {
+  if (!user) throw new Error("Authenticated admin session required.");
+  if (user.app_metadata?.role !== "admin") {
+    throw new Error("SEKUR admin access required.");
+  }
+}
+
 export async function authenticateCareerResearchAdmin(request: Request) {
   const authorization = request.headers.get("authorization");
   if (!authorization?.startsWith("Bearer ")) {
@@ -22,9 +31,7 @@ export async function authenticateCareerResearchAdmin(request: Request) {
     throw new Error("Authenticated admin session required.");
   }
 
-  if (user.app_metadata?.role !== "admin") {
-    throw new Error("SEKUR admin access required.");
-  }
+  assertCareerResearchAdmin(user);
 
   return { supabase, user };
 }
