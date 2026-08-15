@@ -83,7 +83,15 @@ export async function GET(request: Request) {
       .limit(10);
 
     if (error) throw new Error(`Could not load career research history: ${error.message}`);
-    return NextResponse.json({ target, runs: data ?? [] });
+    const { data: versions, error: versionsError } = await supabase
+      .from("career_market_profile_versions")
+      .select("id,career_slug,country_slug,event_type,before_profile,after_profile,source_run_id,published_by,published_at")
+      .eq("career_slug", careerSlug)
+      .eq("country_slug", countrySlug)
+      .order("published_at", { ascending: false })
+      .limit(20);
+    if (versionsError) throw new Error(`Could not load publication history: ${versionsError.message}`);
+    return NextResponse.json({ target, runs: data ?? [], versions: versions ?? [] });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown career research error.";
     return NextResponse.json({ error: message }, { status: errorStatus(message) });
@@ -259,6 +267,28 @@ export async function PUT(request: Request) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown career research publishing error.";
+    return NextResponse.json({ error: message }, { status: errorStatus(message) });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { supabase } = await authenticateCareerResearchAdmin(request);
+    const body = (await request.json().catch(() => ({}))) as { versionId?: number };
+    if (!Number.isInteger(body.versionId) || Number(body.versionId) <= 0) {
+      throw new Error("A valid publication version ID is required.");
+    }
+    const { data: rollback, error } = await supabase.rpc("rollback_career_market_profile", {
+      p_version_id: body.versionId,
+    });
+    if (error) throw new Error(`Could not roll back career market profile: ${error.message}`);
+    return NextResponse.json({
+      message: "Rollback completed as a new immutable publication version.",
+      rollback,
+      safeguards: { historyDeleted: false, explicitRollback: true, newVersionCreated: true },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown career market rollback error.";
     return NextResponse.json({ error: message }, { status: errorStatus(message) });
   }
 }

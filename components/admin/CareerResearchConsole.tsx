@@ -25,7 +25,14 @@ type ResearchRun = {
   live_profile_snapshot: { salary?: { low?: number | null; typical?: number | null; high?: number | null } };
 };
 
-type ResearchResponse = { message?: string; error?: string; run?: ResearchRun; runs?: ResearchRun[]; publication?: { versionId?: number } };
+type PublicationVersion = {
+  id: number;
+  event_type: "publish" | "rollback";
+  after_profile: { salary?: { low?: number | null; typical?: number | null; high?: number | null; sourceCurrency?: string } };
+  published_at: string;
+};
+
+type ResearchResponse = { message?: string; error?: string; run?: ResearchRun; runs?: ResearchRun[]; versions?: PublicationVersion[]; publication?: { versionId?: number } };
 type BulkResearchResult = { careerSlug: string; countrySlug: string; status: string; error?: string; researchedAt?: string };
 
 function formatMoney(value: number | null | undefined, currency: string) {
@@ -45,13 +52,16 @@ export default function CareerResearchConsole() {
   const [reviewNotes, setReviewNotes] = useState("");
   const [publishing, setPublishing] = useState(false);
   const [confirmPublish, setConfirmPublish] = useState(false);
+  const [versions, setVersions] = useState<PublicationVersion[]>([]);
+  const [confirmRollback, setConfirmRollback] = useState<number | null>(null);
+  const [rollingBack, setRollingBack] = useState(false);
   const target = getCareerResearchTarget(careerSlug, countrySlug);
   const countrySource = getCareerResearchCountrySource(countrySlug);
   const supported = Boolean(target?.enabled);
 
   const request = useCallback(async (
-    method: "GET" | "POST" | "PATCH" | "PUT",
-    actionBody?: { runId: number; decision?: "approve" | "reject"; reviewNotes?: string }
+    method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
+    actionBody?: { runId?: number; versionId?: number; decision?: "approve" | "reject"; reviewNotes?: string }
   ) => {
     if (!target?.enabled) throw new Error("Automated research is not supported for this career-market combination.");
     const { data: { session } } = await supabase.auth.getSession();
@@ -66,6 +76,8 @@ export default function CareerResearchConsole() {
           ? JSON.stringify(actionBody)
           : method === "PUT"
             ? JSON.stringify({ runId: actionBody?.runId })
+          : method === "DELETE"
+            ? JSON.stringify({ versionId: actionBody?.versionId })
           : undefined,
     });
     const result = (await response.json()) as ResearchResponse;
@@ -78,6 +90,7 @@ export default function CareerResearchConsole() {
       const result = await request("GET");
       const history = result.runs ?? [];
       setRuns(history);
+      setVersions(result.versions ?? []);
       setSelected((current) => current ?? history[0] ?? null);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not load research history.");
@@ -92,6 +105,7 @@ export default function CareerResearchConsole() {
         if (!active) return;
         const history = result.runs ?? [];
         setRuns(history);
+        setVersions(result.versions ?? []);
         setSelected(history[0] ?? null);
       })
       .catch((error: unknown) => {
@@ -184,6 +198,20 @@ export default function CareerResearchConsole() {
     } finally { setPublishing(false); }
   }
 
+  async function rollbackVersion(versionId: number) {
+    if (rollingBack || confirmRollback !== versionId) return;
+    setRollingBack(true);
+    setMessage("Creating an immutable rollback version...");
+    try {
+      const result = await request("DELETE", { versionId });
+      setMessage(result.message ?? "Rollback completed.");
+      setConfirmRollback(null);
+      await loadHistory();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Rollback failed.");
+    } finally { setRollingBack(false); }
+  }
+
   const candidate = selected?.candidate_profile;
   const liveSalary = selected?.live_profile_snapshot?.salary;
   const publishingSupported = Boolean(
@@ -259,6 +287,16 @@ export default function CareerResearchConsole() {
       <aside className="rounded-3xl border border-white/10 bg-[#091426] p-6">
         <h2 className="text-xl font-black">Research history</h2><p className="mt-2 text-sm leading-6 text-slate-500">Latest ten immutable snapshots for the selected career × country.</p>
         <div className="mt-5 space-y-3">{runs.map((run) => <button key={run.id} type="button" onClick={() => { setSelected(run); setConfirmPublish(false); }} className={`w-full rounded-xl border p-4 text-left ${selected?.id === run.id ? "border-blue-400/40 bg-blue-400/10" : "border-white/10 bg-white/[0.025]"}`}><div className="flex justify-between gap-3"><span className="font-bold">Run #{run.id}</span><span className="text-xs font-black uppercase text-amber-300">{run.status.replace("_", " ")}{run.published_at ? " · published" : ""}</span></div><div className="mt-2 text-xs text-slate-500">{new Date(run.researched_at || run.created_at).toLocaleString()}</div></button>)}{runs.length === 0 && <div className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No research history.</div>}</div>
+        <div className="mt-8 border-t border-white/10 pt-6">
+          <h2 className="text-xl font-black">Publication history</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-500">Append-only live versions. Rollback creates a new version and never deletes history.</p>
+          <div className="mt-5 space-y-3">{versions.map((version, index) => {
+            const salary = version.after_profile.salary;
+            const currency = salary?.sourceCurrency ?? target?.nativeCurrency ?? "USD";
+            const isCurrent = index === 0;
+            return <div key={version.id} className="rounded-xl border border-white/10 bg-white/[0.025] p-4"><div className="flex items-start justify-between gap-3"><div><div className="font-bold">Version #{version.id}</div><div className="mt-1 text-xs uppercase tracking-wider text-slate-500">{version.event_type} · {new Date(version.published_at).toLocaleString()}</div></div>{isCurrent && <span className="signal-chip rounded-full px-2 py-1 text-[10px] font-black uppercase">Current</span>}</div><div className="mt-3 text-xs leading-5 text-slate-400">{formatMoney(salary?.low, currency)} · {formatMoney(salary?.typical, currency)} · {formatMoney(salary?.high, currency)}</div>{!isCurrent && (confirmRollback === version.id ? <div className="mt-4 rounded-lg border border-red-300/25 bg-red-300/[0.06] p-3"><div className="text-sm font-black text-red-100">Replace the live profile with this version?</div><p className="mt-1 text-xs leading-5 text-slate-300">A new rollback event records the before/after state. Existing versions remain immutable.</p><div className="mt-3 flex gap-2"><button type="button" disabled={rollingBack} onClick={() => rollbackVersion(version.id)} className="rounded-lg bg-red-300 px-3 py-2 text-xs font-black text-slate-950 disabled:opacity-50">{rollingBack ? "Rolling back..." : "Confirm rollback"}</button><button type="button" disabled={rollingBack} onClick={() => setConfirmRollback(null)} className="rounded-lg border border-white/15 px-3 py-2 text-xs font-bold">Cancel</button></div></div> : <button type="button" onClick={() => setConfirmRollback(version.id)} className="mt-3 text-xs font-bold text-fuchsia-200 hover:text-fuchsia-100">Preview rollback</button>)}</div>;
+          })}{versions.length === 0 && <div className="rounded-xl border border-dashed border-white/10 p-5 text-sm text-slate-500">No published versions for this target.</div>}</div>
+        </div>
       </aside>
     </div>
   );

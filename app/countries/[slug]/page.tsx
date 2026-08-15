@@ -346,7 +346,7 @@ export default async function CountryPage({
           label="Currency"
           value={
             typedCountry.currency ??
-            "â€”"
+            "—"
           }
         />
 
@@ -354,7 +354,7 @@ export default async function CountryPage({
           label="Language"
           value={
             typedCountry.language ??
-            "â€”"
+            "—"
           }
         />
 
@@ -362,7 +362,7 @@ export default async function CountryPage({
           label="Region"
           value={
             typedCountry.region ??
-            "â€”"
+            "—"
           }
         />
       </section>
@@ -563,7 +563,7 @@ export default async function CountryPage({
           />
 
           <InfoCard
-            title="âš– Work-Life Balance"
+            title="⚖ Work-Life Balance"
             text={`Current intelligence rating: ${workLife}.`}
           />
 
@@ -619,7 +619,7 @@ export default async function CountryPage({
               <div className="mt-1 text-2xl font-black">
                 {intelligence
                   ? intelligence.score
-                  : "â€”"}
+                  : "—"}
               </div>
 
               <div className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
