@@ -37,7 +37,7 @@ export default async function CountriesPage() {
           opportunities.
         </p>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {countries.length > 0 ? <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {countries.map((country) => (
             <Link
               key={country.id}
@@ -96,7 +96,7 @@ export default async function CountriesPage() {
               </div>
             </Link>
           ))}
-        </div>
+        </div> : <div className="glass-subtle mt-10 rounded-2xl border p-8 text-center"><h2 className="text-xl font-black">Country intelligence is temporarily unavailable</h2><p className="mt-3 text-sm text-slate-400">Please try again shortly. SEKUR will not substitute unverified country data.</p></div>}
 
         {countries.length === 0 && (
           <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.025] px-6 py-16 text-center">

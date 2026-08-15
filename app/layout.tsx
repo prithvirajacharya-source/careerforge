@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import CurrencyProvider from "@/components/CurrencyProvider";
 import DeveloperMode from "@/components/DeveloperMode";
+import SiteFooter from "@/components/SiteFooter";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('sekur-visual-theme');document.documentElement.dataset.sekurTheme=t==='original'?'original':'glass-uhd'}catch(e){document.documentElement.dataset.sekurTheme='glass-uhd'}})();` }} /></head>
       <body className="sekur-shell min-h-full flex flex-col">
-        <CurrencyProvider>{children}<DeveloperMode /></CurrencyProvider>
+        <CurrencyProvider>{children}<SiteFooter /><DeveloperMode /></CurrencyProvider>
       </body>
     </html>
   );

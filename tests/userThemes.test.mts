@@ -15,3 +15,11 @@ test("authenticated value routes retain the shared dual-theme shell", () => {
     assert.match(page, /SiteHeader/);
   }
 });
+
+test("Glass UHD shares the Original background without changing theme persistence", () => {
+  const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+  assert.doesNotMatch(css, /sekur-dusk-skyline|url\("\/images\/sekur-dusk/);
+  assert.match(css, /body\s*\{[\s\S]*?background:\s*#07101f;/);
+  assert.match(css, /html\[data-sekur-theme="original"\] body\s*\{[\s\S]*?background:\s*#07101f;/);
+  assert.match(css, /--glass-fill:\s*rgba\(5, 18, 32, 0\.18\)/);
+});

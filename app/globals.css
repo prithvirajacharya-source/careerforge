@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #06111f;
+  --background: #07101f;
   --foreground: #f8fafc;
-  --glass-fill: rgba(5, 18, 32, 0.3);
-  --glass-fill-subtle: rgba(5, 18, 32, 0.22);
-  --glass-line: rgba(215, 240, 255, 0.46);
+  --glass-fill: rgba(5, 18, 32, 0.18);
+  --glass-fill-subtle: rgba(5, 18, 32, 0.12);
+  --glass-line: rgba(215, 240, 255, 0.5);
   --glass-highlight: rgba(255, 255, 255, 0.25);
   --signal: #36e6a2;
 }
@@ -30,26 +30,10 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   font-feature-settings: "kern" 1, "ss01" 1;
   text-rendering: geometricPrecision;
-  background-color: var(--background);
-  background-image:
-    linear-gradient(100deg, rgba(2, 10, 22, 0.44) 0%, rgba(3, 17, 31, 0.14) 58%, rgba(1, 10, 20, 0.25) 100%),
-    linear-gradient(180deg, rgba(4, 16, 30, 0.04), rgba(2, 10, 21, 0.18)),
-    url("/images/sekur-dusk-skyline-uhd.webp");
-  background-size: cover;
-  background-position: center top;
-  background-attachment: fixed;
+  background: #07101f;
 }
 
-body::before {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  content: "";
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 78% 22%, rgba(85, 225, 189, 0.045), transparent 22rem),
-    linear-gradient(180deg, transparent 64%, rgba(2, 10, 21, 0.22) 100%);
-}
+body::before { display: none; }
 
 .sekur-shell main { width: 100%; min-width: 0; max-width: 100vw; overflow-x: clip; background-color: transparent !important; }
 .sekur-home, .sekur-discovery, .sekur-intelligence, .sekur-admin { background-image: none; }
@@ -91,7 +75,7 @@ html[data-sekur-theme="glass-uhd"] .home-career-search {
 .glass-panel::before, .glass-metric::before,
 .sekur-shell :where(.rounded-2xl, .rounded-3xl)[class*="border"]::before {
   position: absolute; inset: 0; z-index: 0; border-radius: inherit; content: ""; pointer-events: none;
-  background: linear-gradient(135deg, rgba(255,255,255,.15), rgba(255,255,255,.035) 24%, transparent 40%);
+  background: linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.035) 24%, transparent 40%);
 }
 
 .glass-surface::after, .glass-card::after, .glass-subtle::after, .glass-elevated::after,
@@ -122,8 +106,8 @@ html[data-sekur-theme="glass-uhd"] .home-career-search {
   backdrop-filter: blur(8px) saturate(122%);
 }
 
-.glass-panel { background-color: rgba(5,18,32,.36); backdrop-filter: blur(9px) saturate(124%); }
-.glass-metric { background-color: rgba(5,18,32,.34); backdrop-filter: blur(8px) saturate(122%); }
+.glass-panel { background-color: rgba(5,18,32,.22); backdrop-filter: blur(8px) saturate(122%); }
+.glass-metric { background-color: rgba(5,18,32,.2); backdrop-filter: blur(7px) saturate(120%); }
 .glass-control { border: 1px solid rgba(215,240,255,.24); background: rgba(3,13,24,.72); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
 
 .glass-hover { transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease; }
@@ -151,7 +135,6 @@ html[data-sekur-theme="glass-uhd"] .home-career-search {
 }
 
 @media (max-width: 640px) {
-  body { background-attachment: scroll; background-position: 62% top; }
   .glass-surface, .glass-card, .glass-panel, .glass-metric, .glass-elevated,
   .sekur-shell :where(.rounded-2xl, .rounded-3xl)[class*="border"][class*="bg-white/"] {
     backdrop-filter: blur(5px) saturate(116%);

@@ -22,6 +22,13 @@ export type SalaryMethodology = {
   normalization: string;
 };
 
+export type OutlookResearch = {
+  projectedGrowthPercent: number;
+  annualOpenings: number;
+  forecastPeriod: string;
+  methodology: string;
+};
+
 export type CareerResearchCandidate = {
   schemaVersion: "career-research-v1";
   careerSlug: string;
@@ -37,6 +44,7 @@ export type CareerResearchCandidate = {
     verificationStatus: ResearchStatus;
   };
   hiringOutlook: ResearchedMetric<string>;
+  outlookEvidence?: ResearchedMetric<OutlookResearch>;
   demand: ResearchedMetric<string>;
   employmentRisk: ResearchedMetric<string>;
   education: ResearchedMetric<EducationResearch>;
@@ -100,5 +108,23 @@ export function validateCareerResearchCandidate(
 
   if (typical !== null && high !== null && typical > high) {
     throw new Error("Typical salary cannot exceed salary high.");
+  }
+
+  const outlook = candidate.outlookEvidence;
+  if (outlook) {
+    if (outlook.value === null) {
+      if (outlook.provenance !== null) throw new Error("Unavailable outlook evidence cannot carry provenance.");
+    } else {
+      if (!Number.isFinite(outlook.value.projectedGrowthPercent) || !Number.isInteger(outlook.value.annualOpenings) || outlook.value.annualOpenings < 0) {
+        throw new Error("Outlook evidence requires a finite growth rate and non-negative integer annual openings.");
+      }
+      if (!outlook.value.forecastPeriod || !outlook.provenance?.sourceUrl || !outlook.provenance.sourceName) {
+        throw new Error("Outlook evidence must retain forecast period and source provenance.");
+      }
+    }
+  }
+
+  if (candidate.education.value !== null && (!candidate.education.provenance?.sourceUrl || !candidate.education.provenance.sourceName)) {
+    throw new Error("Education evidence must retain source provenance.");
   }
 }

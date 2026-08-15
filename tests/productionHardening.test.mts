@@ -9,7 +9,9 @@ test("production headers and crawler boundaries protect private surfaces", () =>
   for (const header of ["X-Content-Type-Options", "X-Frame-Options", "Referrer-Policy", "Permissions-Policy"]) {
     assert.match(config, new RegExp(header));
   }
-  assert.match(robots, /disallow: \["\/admin\/", "\/api\/"\]/);
+  for (const path of ["/admin/", "/api/", "/profile", "/saved", "/opportunity-report", "/career-switch", "/salary-negotiation"]) {
+    assert.match(robots, new RegExp(path.replace("/", "\\/")));
+  }
   assert.match(adminLayout, /index: false/);
   assert.match(adminLayout, /follow: false/);
 });

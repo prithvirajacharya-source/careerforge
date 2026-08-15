@@ -1,6 +1,7 @@
 import type { CareerResearchCandidate, EvidenceProvenance } from "./model.ts";
 import { unavailableMetric, validateCareerResearchCandidate } from "./model.ts";
 import type { CareerResearchTarget } from "./registry.ts";
+import { getBlsCareerDepth } from "./blsOutlook.ts";
 
 export const BLS_PUBLIC_DATA_API =
   "https://api.bls.gov/publicAPI/v2/timeseries/data/";
@@ -116,6 +117,16 @@ export function normalizeBlsOewsResponse(
       "Outlook, openings, and education remain unavailable because this OEWS API collection contains wage evidence only.",
     ],
   };
+
+  const depth = getBlsCareerDepth(target.careerSlug, researchedAt);
+  if (depth) {
+    candidate.outlookEvidence = depth.outlook;
+    candidate.education = depth.education;
+    candidate.notes = [
+      `Explicit SEKUR mapping: ${target.careerName} uses BLS SOC ${target.occupationCode}.`,
+      "Outlook and education are independently sourced from BLS Employment Projections and the Occupational Outlook Handbook; no qualitative demand label is inferred.",
+    ];
+  }
 
   validateCareerResearchCandidate(candidate, target.nativeCurrency);
   return candidate;

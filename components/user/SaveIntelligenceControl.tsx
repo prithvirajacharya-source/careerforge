@@ -11,6 +11,7 @@ export default function SaveIntelligenceControl({ itemType, careerSlug, countryS
   const [userId, setUserId] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
@@ -18,7 +19,11 @@ export default function SaveIntelligenceControl({ itemType, careerSlug, countryS
       let query = supabase.from("saved_career_markets").select("id").eq("user_id", data.user.id).eq("item_type", itemType);
       query = careerSlug ? query.eq("career_slug", careerSlug) : query.is("career_slug", null);
       query = countrySlug ? query.eq("country_slug", countrySlug) : query.is("country_slug", null);
-      const { data: row } = await query.maybeSingle();
+      const { data: row, error } = await query.maybeSingle();
+      if (error) {
+        setMessage("Saved status is temporarily unavailable.");
+        return;
+      }
       setSavedId(row?.id ?? null);
     });
   }, [careerSlug, countrySlug, itemType]);
@@ -27,14 +32,23 @@ export default function SaveIntelligenceControl({ itemType, careerSlug, countryS
   async function toggle() {
     if (busy) return;
     setBusy(true);
-    if (savedId) {
-      const { error } = await supabase.from("saved_career_markets").delete().eq("id", savedId).eq("user_id", userId);
-      if (!error) setSavedId(null);
-    } else {
-      const { data, error } = await supabase.from("saved_career_markets").insert({ user_id: userId, item_type: itemType, career_slug: careerSlug ?? null, country_slug: countrySlug ?? null }).select("id").single();
-      if (!error) { setSavedId(data.id); trackMonetizationEvent("save_created", { itemType, careerSlug: careerSlug ?? "", countrySlug: countrySlug ?? "" }); }
+    setMessage("");
+    try {
+      if (savedId) {
+        const { error } = await supabase.from("saved_career_markets").delete().eq("id", savedId).eq("user_id", userId);
+        if (error) throw error;
+        setSavedId(null);
+      } else {
+        const { data, error } = await supabase.from("saved_career_markets").insert({ user_id: userId, item_type: itemType, career_slug: careerSlug ?? null, country_slug: countrySlug ?? null }).select("id").single();
+        if (error) throw error;
+        setSavedId(data.id);
+        trackMonetizationEvent("save_created", { itemType, careerSlug: careerSlug ?? "", countrySlug: countrySlug ?? "" });
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not update saved intelligence.");
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
   }
-  return <button type="button" onClick={toggle} disabled={busy} aria-pressed={Boolean(savedId)} className={`rounded-lg border px-3 py-2 text-xs font-bold transition disabled:opacity-50 ${savedId ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-200" : "border-white/15 bg-black/15 text-slate-300 hover:text-white"}`}>{savedId ? "Saved" : label}</button>;
+  return <div><button type="button" onClick={toggle} disabled={busy} aria-pressed={Boolean(savedId)} className={`rounded-lg border px-3 py-2 text-xs font-bold transition disabled:opacity-50 ${savedId ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-200" : "border-white/15 bg-black/15 text-slate-300 hover:text-white"}`}>{savedId ? "Saved" : label}</button>{message && <p role="status" className="mt-2 max-w-64 text-xs text-red-200">{message}</p>}</div>;
 }

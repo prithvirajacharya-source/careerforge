@@ -42,6 +42,13 @@ function response(values: Partial<Record<"11" | "13" | "15", string>> = {
   };
 }
 
+function responseFor(researchTarget: typeof target) {
+  return {
+    status: "REQUEST_SUCCEEDED",
+    Results: { series: [["11", "70000"], ["13", "100000"], ["15", "150000"]].map(([datatype, value]) => ({ seriesID: blsOewsSeriesId(researchTarget.occupationCode, datatype), data: [{ year: "2025", period: "A01", value }] })) },
+  };
+}
+
 test("all seven United States targets have explicit defensible BLS SOC mappings", () => {
   const usTargets = CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "united-states");
   assert.equal(usTargets.length, 7);
@@ -132,4 +139,31 @@ test("United States publishing migration keeps atomic audit and native-market gu
   assert.match(sql, /insert into public\.career_market_profiles/i);
   assert.match(sql, /update public\.career_research_runs/i);
   assert.match(sql, /for update/i);
+});
+
+test("all seven United States targets retain raw official outlook and education provenance", () => {
+  const expected = new Map([
+    ["mechanical-engineer", [9.1, 18_100]], ["cybersecurity-analyst", [28.5, 16_000]],
+    ["software-engineer", [15.8, 115_200]], ["electrical-engineer", [7.2, 11_700]],
+    ["data-scientist", [33.5, 23_400]], ["registered-nurse", [4.9, 189_100]],
+    ["accountant", [4.6, 124_200]],
+  ]);
+  for (const researchTarget of CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "united-states")) {
+    const candidate = normalizeBlsOewsResponse(responseFor(researchTarget), researchTarget, "2026-08-15T12:00:00.000Z");
+    assert.deepEqual([candidate.outlookEvidence?.value?.projectedGrowthPercent, candidate.outlookEvidence?.value?.annualOpenings], expected.get(researchTarget.careerSlug));
+    assert.equal(candidate.outlookEvidence?.value?.forecastPeriod, "2024–2034");
+    assert.match(candidate.outlookEvidence?.provenance?.sourceName ?? "", /Bureau of Labor Statistics/);
+    assert.equal(candidate.education.value?.verificationStatus, "verified");
+    assert.ok(candidate.education.provenance?.sourceUrl.includes("bls.gov/ooh/"));
+    assert.equal(candidate.demand.value, null);
+    assert.doesNotThrow(() => validateCareerResearchCandidate(candidate, "USD"));
+  }
+});
+
+test("registered nurse regulation and alternative pathways remain structured", () => {
+  const nurse = getCareerResearchTarget("registered-nurse", "united-states")!;
+  const candidate = normalizeBlsOewsResponse(responseFor(nurse), nurse, "2026-08-15T12:00:00.000Z");
+  assert.equal(candidate.education.value?.regulatedProfessionStatus, "regulated");
+  assert.match(candidate.education.value?.licensingRequirements?.[0] ?? "", /licensed by the state/);
+  assert.deepEqual(candidate.education.value?.alternativePathways, ["Associate degree in nursing", "Diploma from an approved nursing program", "RN-to-BSN program"]);
 });

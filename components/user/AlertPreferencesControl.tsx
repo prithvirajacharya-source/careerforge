@@ -16,17 +16,27 @@ export default function AlertPreferencesControl({ careerSlug, countrySlug }: { c
   const [types, setTypes] = useState<AlertType[]>(["salary_updated", "new_verified_data"]);
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [checking, setChecking] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   useEffect(() => { supabase.auth.getUser().then(async ({ data }) => {
-    if (!data.user) return;
+    if (!data.user) { setChecking(false); return; }
     setUserId(data.user.id);
     const [subscription, entitlement] = await Promise.all([
       supabase.from("career_alert_subscriptions").select("active,alert_types").eq("user_id", data.user.id).eq("career_slug", careerSlug).eq("country_slug", countrySlug).maybeSingle(),
       supabase.from("user_entitlements").select("plan_key,feature_overrides,valid_until").eq("user_id", data.user.id).maybeSingle(),
     ]);
+    if (subscription.error || entitlement.error) {
+      setLoadError(true);
+      setChecking(false);
+      return;
+    }
     if (subscription.data) { setActive(subscription.data.active); setTypes(subscription.data.alert_types as AlertType[]); }
     const plan = entitlement.data?.valid_until && new Date(entitlement.data.valid_until) < new Date() ? "free" : entitlement.data?.plan_key;
     setAllowed(resolveEntitlements(plan, entitlement.data?.feature_overrides ?? {}).alerts);
+    setChecking(false);
   }); }, [careerSlug, countrySlug]);
+  if (checking) return <span className="text-xs text-slate-500">Checking alerts…</span>;
+  if (loadError) return <span className="text-xs text-red-200">Alerts temporarily unavailable</span>;
   if (!userId) return <Link href="/profile" className="rounded-lg border border-white/15 px-3 py-2 text-xs font-bold">Sign in for alerts</Link>;
   if (!allowed) return <Link href="/pro" onClick={() => trackMonetizationEvent("pro_feature_viewed", { feature: "alerts", route: "career-market" })} className="rounded-lg border border-amber-300/20 px-3 py-2 text-xs font-bold text-amber-100">Alerts · Requires Pro</Link>;
   async function save(nextActive = active) {

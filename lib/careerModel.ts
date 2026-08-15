@@ -25,6 +25,8 @@ export type EducationResearch = {
   commonFields: string[];
   alternativePathways: string[];
   certifications: string[];
+  regulatedProfessionStatus?: "regulated" | "partially-regulated" | "not-generally-regulated" | null;
+  licensingRequirements?: string[];
   verificationStatus: ResearchStatus;
 };
 
