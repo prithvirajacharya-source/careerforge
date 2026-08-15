@@ -5,6 +5,7 @@ import { collectNorwayCareerResearch } from "./norway.ts";
 import { collectFinlandCareerResearch } from "./finland.ts";
 import { collectDenmarkCareerResearch } from "./denmark.ts";
 import { collectCanadaCareerResearch } from "./canada.ts";
+import { collectOnsAsheCareerResearch } from "./ukAshe.ts";
 
 export async function collectCareerResearch(target: CareerResearchTarget) {
   switch (target.sourceType) {
@@ -16,6 +17,7 @@ export async function collectCareerResearch(target: CareerResearchTarget) {
     case "statfin-pxweb": return collectFinlandCareerResearch(target);
     case "statbank-dk": return collectDenmarkCareerResearch(target);
     case "canada-jobbank-csv": return collectCanadaCareerResearch(target);
+    case "ons-ashe-bulk": return collectOnsAsheCareerResearch(target);
     default: {
       const exhaustive: never = target.sourceType;
       throw new Error(`Unsupported career research source adapter: ${exhaustive}`);

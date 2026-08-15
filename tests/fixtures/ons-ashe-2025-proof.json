@@ -1,0 +1,8 @@
+[
+  { "description": "Mechanical engineers", "code": "2122", "median": 51110, "p10": 33274, "p90": null },
+  { "description": "Other nursing professionals", "code": "2237", "median": 42300, "p10": 29688, "p90": 57736 },
+  { "description": "Programmers and software development professionals", "code": "2134", "median": 56914, "p10": 32835, "p90": 102860 },
+  { "description": "Electrical engineers", "code": "2123", "median": 60303, "p10": 33986, "p90": null },
+  { "description": "Chartered and certified accountants", "code": "2421", "median": 50062, "p10": 29557, "p90": null },
+  { "description": "Cyber security professionals", "code": "2135", "median": 54647, "p10": 32471, "p90": null }
+]

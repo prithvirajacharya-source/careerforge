@@ -7,7 +7,7 @@ export type CareerResearchTarget = {
   countryName: string;
   countryCode: string;
   nativeCurrency: string;
-  sourceType: "scb-pxweb" | "bls-oews-api" | "ssb-pxweb" | "statfin-pxweb" | "statbank-dk" | "canada-jobbank-csv";
+  sourceType: "scb-pxweb" | "bls-oews-api" | "ssb-pxweb" | "statfin-pxweb" | "statbank-dk" | "canada-jobbank-csv" | "ons-ashe-bulk";
   occupationCode: string;
   sourceUrl?: string;
   endpoint: string;
@@ -15,6 +15,9 @@ export type CareerResearchTarget = {
 };
 
 export const CAREER_RESEARCH_TARGETS: CareerResearchTarget[] = [
+  ...[
+    ["mechanical-engineer", "Mechanical Engineer", "2122"], ["registered-nurse", "Registered Nurse", "2237"], ["software-engineer", "Software Engineer", "2134"], ["electrical-engineer", "Electrical Engineer", "2123"], ["accountant", "Accountant", "2421"], ["cybersecurity-analyst", "Cybersecurity Analyst", "2135"],
+  ].map(([careerSlug, careerName, occupationCode]) => ({ careerSlug, careerName, countrySlug: "united-kingdom", countryName: "United Kingdom", countryCode: "GB", nativeCurrency: "GBP", sourceType: "ons-ashe-bulk" as const, occupationCode, sourceUrl: "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/occupation4digitsoc2010ashetable14", endpoint: "/api/research/career-market", enabled: true })),
   ...[
     ["mechanical-engineer", "Mechanical Engineer", "2144"], ["registered-nurse", "Registered Nurse", "2221"], ["software-engineer", "Software Engineer", "2512"], ["electrical-engineer", "Electrical Engineer", "2151"], ["accountant", "Accountant", "2411"],
   ].map(([careerSlug, careerName, occupationCode]) => ({ careerSlug, careerName, countrySlug: "denmark", countryName: "Denmark", countryCode: "DK", nativeCurrency: "DKK", sourceType: "statbank-dk" as const, occupationCode, sourceUrl: "https://www.statbank.dk/LONS20", endpoint: "/api/research/career-market", enabled: true })),
