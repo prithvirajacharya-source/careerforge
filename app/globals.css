@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #06111f;
+  --foreground: #f8fafc;
+  --glass-fill: rgba(5, 18, 32, 0.3);
+  --glass-fill-subtle: rgba(5, 18, 32, 0.22);
+  --glass-line: rgba(215, 240, 255, 0.46);
+  --glass-highlight: rgba(255, 255, 255, 0.25);
+  --signal: #36e6a2;
 }
 
 @theme inline {
@@ -12,15 +17,211 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html { background: var(--background); }
+
+body {
+  min-height: 100vh;
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-feature-settings: "kern" 1, "ss01" 1;
+  text-rendering: geometricPrecision;
+  background-color: var(--background);
+  background-image:
+    linear-gradient(100deg, rgba(2, 10, 22, 0.44) 0%, rgba(3, 17, 31, 0.14) 58%, rgba(1, 10, 20, 0.25) 100%),
+    linear-gradient(180deg, rgba(4, 16, 30, 0.04), rgba(2, 10, 21, 0.18)),
+    url("/images/sekur-dusk-skyline-uhd.webp");
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 78% 22%, rgba(85, 225, 189, 0.045), transparent 22rem),
+    linear-gradient(180deg, transparent 64%, rgba(2, 10, 21, 0.22) 100%);
+}
+
+.sekur-shell main { width: 100%; min-width: 0; max-width: 100vw; overflow-x: clip; background-color: transparent !important; }
+.sekur-home, .sekur-discovery, .sekur-intelligence, .sekur-admin { background-image: none; }
+
+html[data-sekur-theme="glass-uhd"] .sekur-shell .max-w-7xl {
+  width: min(94vw, 1720px);
+  max-width: min(94vw, 1720px);
+}
+
+html[data-sekur-theme="glass-uhd"] .home-career-search {
+  max-width: min(100%, 62rem);
+}
+
+@media (min-width: 1280px) {
+  html[data-sekur-theme="glass-uhd"] .career-results-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
+.glass-surface,
+.glass-card,
+.glass-panel,
+.glass-metric,
+.sekur-shell :where(.rounded-2xl, .rounded-3xl)[class*="border"][class*="bg-white/"],
+.sekur-shell :where(.rounded-2xl, .rounded-3xl)[class*="border"][class*="bg-[#0b1527]"],
+.sekur-shell :where(.rounded-2xl, .rounded-3xl)[class*="border"][class*="bg-[#091426]"] {
+  position: relative;
+  isolation: isolate;
+  border-radius: 18px;
+  border-color: var(--glass-line);
+  background-color: var(--glass-fill);
+  background-image: none;
+  box-shadow: inset 0 1px 0 var(--glass-highlight), inset 1px 0 0 rgba(255,255,255,.1), 0 14px 34px rgba(4,18,30,.16);
+  backdrop-filter: blur(7px) saturate(122%);
+  text-shadow: 0 1px 4px rgba(1, 18, 32, 0.48);
+}
+
+.glass-surface::before, .glass-card::before, .glass-subtle::before, .glass-elevated::before,
+.glass-panel::before, .glass-metric::before,
+.sekur-shell :where(.rounded-2xl, .rounded-3xl)[class*="border"]::before {
+  position: absolute; inset: 0; z-index: 0; border-radius: inherit; content: ""; pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,255,255,.15), rgba(255,255,255,.035) 24%, transparent 40%);
+}
+
+.glass-surface::after, .glass-card::after, .glass-subtle::after, .glass-elevated::after,
+.glass-panel::after, .glass-metric::after,
+.sekur-shell :where(.rounded-2xl, .rounded-3xl)[class*="border"]::after {
+  position: absolute; right: 12%; bottom: -1px; left: 38%; z-index: 0; height: 1px; content: ""; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(116,238,255,.34), rgba(54,230,162,.2), transparent);
+}
+
+.glass-surface > *, .glass-card > *, .glass-panel > *, .glass-metric > *, .glass-subtle > *, .glass-elevated > *,
+.sekur-shell :where(.rounded-2xl, .rounded-3xl)[class*="border"] > * { position: relative; z-index: 1; }
+
+.glass-subtle {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(220,245,255,.42);
+  background: var(--glass-fill-subtle);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), inset 1px 0 0 rgba(255,255,255,.08), 0 14px 35px rgba(4,18,30,.14);
+  backdrop-filter: blur(5px) saturate(118%);
+}
+
+.glass-elevated {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(225,247,255,.62);
+  background: rgba(8,25,38,.18);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.28), inset 1px 0 0 rgba(255,255,255,.1), 0 16px 38px rgba(4,18,30,.17);
+  backdrop-filter: blur(8px) saturate(122%);
+}
+
+.glass-panel { background-color: rgba(5,18,32,.36); backdrop-filter: blur(9px) saturate(124%); }
+.glass-metric { background-color: rgba(5,18,32,.34); backdrop-filter: blur(8px) saturate(122%); }
+.glass-control { border: 1px solid rgba(215,240,255,.24); background: rgba(3,13,24,.72); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+
+.glass-hover { transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease; }
+.glass-hover:hover { transform: translateY(-2px); border-color: rgba(205,255,240,.7); box-shadow: inset 0 1px 0 rgba(255,255,255,.32), inset 1px 0 0 rgba(255,255,255,.12), 0 20px 44px rgba(4,18,30,.2), 0 0 12px rgba(54,230,162,.06); }
+.signal-text { color: var(--signal); }
+.signal-chip { border: 1px solid rgba(54,230,162,.22); background: rgba(54,230,162,.1); color: #86f7ca; }
+
+.sekur-shell .text-slate-400 { color: rgba(241, 249, 252, 0.9); text-shadow: 0 1px 4px rgba(2,18,31,.68); }
+.sekur-shell .text-slate-500 { color: rgba(225, 239, 245, 0.78); text-shadow: 0 1px 4px rgba(2,18,31,.68); }
+
+.sekur-shell :where(h1, h2, h3) { text-wrap: balance; letter-spacing: -0.025em; }
+.sekur-shell :where(.text-2xl, .text-3xl, .text-4xl, .text-5xl, .text-6xl, .text-7xl) { font-variant-numeric: tabular-nums; }
+
+.sekur-shell header[class*="bg-[#07101f]"] {
+  border-color: rgba(196,231,255,.14);
+  background-color: rgba(3,18,33,.36);
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,.04);
+  backdrop-filter: blur(8px) saturate(120%);
+}
+
+.sekur-shell :where(input, select, textarea)[class*="bg-[#0b1527]"],
+.sekur-shell :where(input, select, textarea)[class*="bg-[#091426]"] {
+  border-color: rgba(196,231,255,.18);
+  background-color: rgba(3,12,25,.86);
+}
+
+@media (max-width: 640px) {
+  body { background-attachment: scroll; background-position: 62% top; }
+  .glass-surface, .glass-card, .glass-panel, .glass-metric, .glass-elevated,
+  .sekur-shell :where(.rounded-2xl, .rounded-3xl)[class*="border"][class*="bg-white/"] {
+    backdrop-filter: blur(5px) saturate(116%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 1px 0 0 rgba(255,255,255,.08), 0 10px 24px rgba(4,18,30,.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) { .glass-hover { transition: none; } }
+
+/* Original SEKUR visual system recovered from feature/germany-intelligence. */
+html[data-sekur-theme="original"] { --background: #0a0a0a; --foreground: #ededed; }
+html[data-sekur-theme="original"] body {
+  background: #07101f;
+  color: #ededed;
   font-family: Arial, Helvetica, sans-serif;
+  font-feature-settings: normal;
+  text-rendering: auto;
+}
+html[data-sekur-theme="original"] body::before { display: none; }
+html[data-sekur-theme="original"] .sekur-shell :where(h1, h2, h3) { letter-spacing: normal; }
+html[data-sekur-theme="original"] .glass-surface,
+html[data-sekur-theme="original"] .glass-card,
+html[data-sekur-theme="original"] .glass-panel,
+html[data-sekur-theme="original"] .glass-metric,
+html[data-sekur-theme="original"] .glass-subtle,
+html[data-sekur-theme="original"] .glass-elevated,
+html[data-sekur-theme="original"] .sekur-shell :where(.rounded-2xl, .rounded-3xl)[class*="border"] {
+  isolation: auto;
+  border-color: rgba(255,255,255,.1);
+  background-color: rgba(255,255,255,.035);
+  background-image: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  text-shadow: none;
+}
+html[data-sekur-theme="original"] .glass-subtle { background-color: rgba(255,255,255,.025); }
+html[data-sekur-theme="original"] .rounded-2xl { border-radius: 1rem; }
+html[data-sekur-theme="original"] .rounded-3xl { border-radius: 1.5rem; }
+html[data-sekur-theme="original"] .glass-elevated { background-color: rgba(59,130,246,.1); border-color: rgba(96,165,250,.3); }
+html[data-sekur-theme="original"] .glass-panel,
+html[data-sekur-theme="original"] .glass-metric { background-color: rgba(255,255,255,.035); }
+html[data-sekur-theme="original"] .glass-surface::before,
+html[data-sekur-theme="original"] .glass-card::before,
+html[data-sekur-theme="original"] .glass-panel::before,
+html[data-sekur-theme="original"] .glass-metric::before,
+html[data-sekur-theme="original"] .glass-subtle::before,
+html[data-sekur-theme="original"] .glass-elevated::before,
+html[data-sekur-theme="original"] .glass-surface::after,
+html[data-sekur-theme="original"] .glass-card::after,
+html[data-sekur-theme="original"] .glass-panel::after,
+html[data-sekur-theme="original"] .glass-metric::after,
+html[data-sekur-theme="original"] .glass-subtle::after,
+html[data-sekur-theme="original"] .glass-elevated::after,
+html[data-sekur-theme="original"] .sekur-shell :where(.rounded-2xl, .rounded-3xl)[class*="border"]::before,
+html[data-sekur-theme="original"] .sekur-shell :where(.rounded-2xl, .rounded-3xl)[class*="border"]::after { display: none; }
+html[data-sekur-theme="original"] .glass-hover:hover { transform: translateY(-4px); border-color: rgba(96,165,250,.3); box-shadow: 0 25px 50px rgba(23,37,84,.2); }
+html[data-sekur-theme="original"] .sekur-shell header[class*="bg-[#07101f]"] {
+  border-color: rgba(255,255,255,.1);
+  background-color: rgba(7,16,31,.9);
+  box-shadow: none;
+  backdrop-filter: blur(8px);
+}
+html[data-sekur-theme="original"] .glass-control,
+html[data-sekur-theme="original"] .sekur-shell :where(input, select, textarea) {
+  border-color: rgba(255,255,255,.1);
+  background-color: #0b1527;
+  box-shadow: none;
+}
+html[data-sekur-theme="original"] .sekur-shell .text-slate-400 { color: #94a3b8; text-shadow: none; }
+html[data-sekur-theme="original"] .sekur-shell .text-slate-500 { color: #64748b; text-shadow: none; }
+html[data-sekur-theme="original"] .signal-text { color: #60a5fa; }
+html[data-sekur-theme="original"] .signal-chip { border-color: rgba(96,165,250,.2); background: rgba(96,165,250,.1); color: #93c5fd; }
+
+@media (max-width: 640px) {
+  .site-brand-subtitle { display: none; }
+  .visual-theme-toggle button { padding-inline: .35rem; font-size: 9px; }
+  .sekur-shell header select { width: 4.75rem; padding-inline: .5rem 1.5rem; }
 }

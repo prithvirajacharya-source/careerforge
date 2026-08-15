@@ -49,7 +49,7 @@ export default async function ComparePage({
 
   if (countries.length < 2) {
     return (
-      <main className="min-h-screen bg-[#07101f] text-white">
+      <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
         <SiteHeader />
 
         <section className="mx-auto max-w-7xl px-6 py-20">
@@ -113,7 +113,7 @@ export default async function ComparePage({
   }
 
   return (
-    <main className="min-h-screen bg-[#07101f] text-white">
+    <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
       <SiteHeader />
 
       <section className="mx-auto max-w-7xl px-6 py-16">

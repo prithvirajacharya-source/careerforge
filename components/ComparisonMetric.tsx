@@ -1,3 +1,5 @@
+import GlassSurface from "@/components/GlassSurface";
+
 type ComparisonMetricProps = {
   label: string;
   leftValue: string | number;
@@ -14,7 +16,7 @@ export default function ComparisonMetric({
   rightScore,
 }: ComparisonMetricProps) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+    <GlassSurface className="rounded-2xl p-6">
       <div className="mb-5 text-center text-sm font-bold uppercase tracking-[0.18em] text-slate-500">
         {label}
       </div>
@@ -50,6 +52,6 @@ export default function ComparisonMetric({
           )}
         </div>
       </div>
-    </div>
+    </GlassSurface>
   );
 }

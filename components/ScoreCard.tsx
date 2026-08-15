@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import GlassSurface from "@/components/GlassSurface";
 
 type ScoreItem = {
   label: string;
@@ -26,14 +27,14 @@ export default function ScoreCard({
   const label = getScoreLabel(score);
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-7">
+    <GlassSurface tone="elevated" className="rounded-3xl p-7">
       <div className="flex items-start justify-between gap-6">
         <div>
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
             {title}
           </div>
 
-          <div className="mt-3 text-5xl font-black">
+          <div className="mt-3 text-5xl font-black text-emerald-300">
             {score}
             <span className="ml-1 text-lg font-semibold text-slate-500">
               /100
@@ -68,6 +69,6 @@ export default function ScoreCard({
           ))}
         </div>
       )}
-    </div>
+    </GlassSurface>
   );
 }

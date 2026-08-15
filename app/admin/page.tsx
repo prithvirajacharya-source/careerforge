@@ -269,7 +269,7 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#07101f] text-white">
+    <main className="sekur-admin min-h-screen bg-[#07101f] text-white">
       <header className="border-b border-white/10 bg-[#07101f]/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <Link href="/" className="flex items-center gap-3">
@@ -478,7 +478,7 @@ export default function AdminPage() {
                 <a
                   key={module.title}
                   href={module.href}
-                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#0b1527] p-6 transition duration-300 hover:-translate-y-1 hover:border-blue-400/30 hover:bg-white/[0.045]"
+                  className="glass-hover group relative overflow-hidden rounded-2xl border border-white/10 bg-[#0b1527] p-6 transition duration-300 hover:-translate-y-1 hover:border-blue-400/30 hover:bg-white/[0.045]"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="text-3xl">{module.icon}</div>

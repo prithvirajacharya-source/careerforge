@@ -64,6 +64,9 @@ export function SalaryComparison({
     { label: "Typical", amount: salary.typical, featured: true },
     { label: "High", amount: salary.high },
   ];
+  const typicalPosition = salary.low !== null && salary.typical !== null && salary.high !== null && salary.high > salary.low
+    ? Math.max(0, Math.min(100, ((salary.typical - salary.low) / (salary.high - salary.low)) * 100))
+    : null;
 
   return (
     <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -72,11 +75,11 @@ export function SalaryComparison({
           key={item.label}
           className={
             item.featured
-              ? "rounded-2xl border border-blue-400/30 bg-blue-400/10 p-5"
-              : "rounded-2xl border border-white/10 bg-black/15 p-5"
+              ? "glass-elevated rounded-2xl border border-emerald-300/30 p-5"
+              : "glass-subtle rounded-2xl p-5"
           }
         >
-          <div className={item.featured ? "text-xs font-bold uppercase tracking-[0.16em] text-blue-300" : "text-xs font-bold uppercase tracking-[0.16em] text-slate-500"}>
+          <div className={item.featured ? "text-xs font-bold uppercase tracking-[0.16em] text-emerald-300" : "text-xs font-bold uppercase tracking-[0.16em] text-slate-500"}>
             {item.label}
           </div>
           <div className="mt-3 text-2xl font-black sm:text-xl lg:text-2xl">
@@ -89,6 +92,9 @@ export function SalaryComparison({
           )}
         </div>
       ))}
+      {typicalPosition !== null && <div className="px-2 sm:col-span-3" aria-label={`Typical salary is ${Math.round(typicalPosition)} percent through the published range`}>
+        <div className="relative h-1 rounded-full bg-white/15"><div className="absolute inset-y-0 left-0 rounded-full bg-emerald-300" style={{ width: `${typicalPosition}%` }} /><span className="absolute top-1/2 h-3 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" style={{ left: `${typicalPosition}%` }} /></div>
+      </div>}
     </div>
   );
 }

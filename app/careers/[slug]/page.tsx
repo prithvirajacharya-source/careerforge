@@ -46,7 +46,7 @@ export default async function CareerPage({
 
   if (!career) {
     return (
-      <main className="min-h-screen bg-[#07101f] text-white">
+      <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
         <SiteHeader />
         <section className="mx-auto max-w-4xl px-6 py-24 text-center">
           <div className="text-4xl" aria-hidden="true">&#128269;</div>
@@ -115,7 +115,7 @@ export default async function CareerPage({
     : career.layoffs;
 
   return (
-    <main className="min-h-screen bg-[#07101f] text-white">
+    <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
       <SiteHeader />
       <section className="mx-auto max-w-7xl px-5 pb-12 pt-12 sm:px-6 sm:pb-14 sm:pt-16">
         <div className="grid gap-10 lg:grid-cols-[1fr_360px] lg:items-end">
@@ -124,7 +124,7 @@ export default async function CareerPage({
             <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl md:text-7xl">
               {career.title}
               {selectedMarket && (
-                <span className="mt-2 block text-blue-300 md:text-[0.72em]">
+                <span className="mt-2 block text-emerald-300 md:text-[0.72em]">
                   {"\u00B7"} {selectedMarket.name}
                 </span>
               )}

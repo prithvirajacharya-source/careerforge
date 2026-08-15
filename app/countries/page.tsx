@@ -17,7 +17,7 @@ export default async function CountriesPage() {
   const countries: Country[] = await getCountries();
 
   return (
-    <main className="min-h-screen bg-[#07101f] text-white">
+    <main className="sekur-discovery min-h-screen bg-[#07101f] text-white">
       <SiteHeader />
 
       <section className="mx-auto max-w-7xl px-6 py-16">
@@ -42,7 +42,7 @@ export default async function CountriesPage() {
             <Link
               key={country.id}
               href={`/countries/${country.slug}`}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] p-6 transition duration-300 hover:-translate-y-1 hover:border-emerald-400/30 hover:bg-white/[0.05] hover:shadow-2xl hover:shadow-emerald-950/20"
+              className="glass-hover group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] p-6 transition duration-300 hover:-translate-y-1 hover:border-emerald-400/30 hover:bg-white/[0.05] hover:shadow-2xl hover:shadow-emerald-950/20"
             >
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-400/[0.04] via-transparent to-blue-400/[0.03] opacity-0 transition duration-300 group-hover:opacity-100" />
 
@@ -93,15 +93,6 @@ export default async function CountriesPage() {
                   </div>
                 </div>
 
-                <div className="mt-6 flex items-center justify-between">
-                  <div className="text-sm font-semibold text-blue-300">
-                    View country intelligence
-                  </div>
-
-                  <div className="text-slate-600 transition duration-300 group-hover:translate-x-1 group-hover:text-emerald-300">
-                    →
-                  </div>
-                </div>
               </div>
             </Link>
           ))}
