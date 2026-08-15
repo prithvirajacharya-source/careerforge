@@ -1,14 +1,16 @@
 "use client";
 
 import type { User } from "@supabase/supabase-js";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { CareerCountryProfile } from "@/lib/careerCountryModel";
 import type { CareerProfile } from "@/lib/careerModel";
 import type { UserCareerProfile } from "@/lib/personalization/model";
 import { resolveEntitlements } from "@/lib/personalization/entitlements";
-import { generateOpportunityReport } from "@/lib/personalization/report";
+import { generateOpportunityReport, opportunityRankLabel } from "@/lib/personalization/report";
 import { validateUserCareerProfile } from "@/lib/personalization/validation";
+import { trackMonetizationEvent } from "@/lib/personalization/analytics";
 
 const countryNames: Record<string, string> = { "united-states": "United States", sweden: "Sweden", germany: "Germany" };
 const emptyProfile: UserCareerProfile = { currentCountry: null, targetCountries: ["sweden", "united-states"], currentCareer: "mechanical-engineer", yearsExperience: null, educationLevel: null, skills: [], desiredSalary: null, desiredSalaryCurrency: null, remotePreference: "neutral", relocationWillingness: "maybe", careerGoals: null };
@@ -22,6 +24,7 @@ export default function OpportunityReportClient({ user, careers, markets }: { us
   const [input, setInput] = useState(emptyProfile);
   const [report, setReport] = useState<ReturnType<typeof generateOpportunityReport> | null>(null);
   const [advanced, setAdvanced] = useState(false);
+  const [deepFactors, setDeepFactors] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -32,13 +35,16 @@ export default function OpportunityReportClient({ user, careers, markets }: { us
     ]).then(([profileResult, entitlement]) => {
       if (profileResult.data) setInput({ currentCountry: profileResult.data.current_country, targetCountries: profileResult.data.target_countries?.length ? profileResult.data.target_countries : emptyProfile.targetCountries, currentCareer: profileResult.data.current_career ?? emptyProfile.currentCareer, yearsExperience: profileResult.data.years_experience, educationLevel: profileResult.data.education_level, skills: profileResult.data.skills ?? [], desiredSalary: profileResult.data.desired_salary, desiredSalaryCurrency: profileResult.data.desired_salary_currency, remotePreference: profileResult.data.remote_preference, relocationWillingness: profileResult.data.relocation_willingness, careerGoals: profileResult.data.career_goals });
       const plan = entitlement.data?.valid_until && new Date(entitlement.data.valid_until) < new Date() ? "free" : entitlement.data?.plan_key;
-      setAdvanced(resolveEntitlements(plan, entitlement.data?.feature_overrides ?? {}).advancedReport);
+      const capabilities = resolveEntitlements(plan, entitlement.data?.feature_overrides ?? {});
+      setAdvanced(capabilities.advancedReport);
+      setDeepFactors(capabilities.deepFactorBreakdown);
       setLoading(false);
     });
   }, [user.id]);
 
   async function generate() {
     setMessage("");
+    trackMonetizationEvent("opportunity_report_started", { careerSlug: input.currentCareer ?? "" });
     try {
       validateUserCareerProfile(input);
       const career = careers.find(item => item.slug === input.currentCareer);
@@ -46,6 +52,7 @@ export default function OpportunityReportClient({ user, careers, markets }: { us
       if (!input.targetCountries.length) throw new Error("Select at least one target country.");
       const output = generateOpportunityReport(input, career, markets.filter(market => market.careerSlug === career.slug));
       setReport(output);
+      trackMonetizationEvent("opportunity_report_completed", { careerSlug: career.slug, coverage: output.markets[0]?.ranking.coverage ?? 0 });
       const { error } = await supabase.from("career_opportunity_reports").insert({ user_id: user.id, status: "ready", input_snapshot: input, output_snapshot: output, methodology_version: output.methodologyVersion, evidence_researched_at: new Date().toISOString() });
       setMessage(error ? `Report generated, but its private snapshot could not be saved: ${error.message}` : "Report generated and saved to your private account.");
     } catch (error) {
@@ -75,12 +82,12 @@ export default function OpportunityReportClient({ user, careers, markets }: { us
     {report && <section className="mt-10">
       <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-3xl font-black">Ranked target markets</h2><p className="mt-2 text-sm text-slate-400">Methodology: {report.methodologyVersion}</p></div><span className="rounded-full border border-amber-300/20 bg-amber-300/5 px-3 py-2 text-xs text-amber-100">Not immigration or legal advice</span></div>
       {report.markets.length ? <div className="mt-6 space-y-5">{report.markets.map((market, index) => <article key={market.countrySlug} className="glass-card rounded-3xl border p-6 sm:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-4"><div><div className="text-xs font-black uppercase tracking-wider text-emerald-300">#{index + 1} target market</div><h3 className="mt-2 text-2xl font-black">{countryNames[market.countrySlug]}</h3></div><div className="text-right">{market.ranking.score === null ? <div className="text-lg font-black text-amber-200">Insufficient evidence</div> : <div className="text-4xl font-black text-emerald-300">{market.ranking.score}</div>}<div className="mt-1 text-xs uppercase text-slate-400">{market.ranking.confidence} confidence · {market.ranking.coverage}% coverage</div></div></div>
+        <div className="flex flex-wrap items-start justify-between gap-4"><div><div className="text-xs font-black uppercase tracking-wider text-emerald-300">{opportunityRankLabel(report.markets, index)}</div><h3 className="mt-2 text-2xl font-black">{countryNames[market.countrySlug]}</h3></div><div className="text-right">{market.ranking.score === null ? <div className="text-lg font-black text-amber-200">Insufficient evidence</div> : <div className="text-4xl font-black text-emerald-300">{market.ranking.score}</div>}<div className="mt-1 text-xs uppercase text-slate-400">{market.ranking.confidence} confidence · {market.ranking.coverage}% coverage</div></div></div>
         <div className="mt-6 grid gap-3 sm:grid-cols-3">{(["low", "typical", "high"] as const).map(key => <div key={key} className="glass-metric rounded-xl border p-4"><div className="text-xs capitalize text-slate-400">{key}</div><div className="mt-1 font-black">{formatNativeSalary(market.salary[key], market.salary.sourceCurrency)}</div></div>)}</div>
-        <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-2"><div><dt className="font-bold text-slate-400">Hiring outlook</dt><dd className="mt-1">{market.hiringOutlook.value ?? "Unavailable"}</dd></div><div><dt className="font-bold text-slate-400">Demand</dt><dd className="mt-1">{market.demand.value ?? "Unavailable"}</dd></div><div><dt className="font-bold text-slate-400">Evidence period</dt><dd className="mt-1">{market.salary.observationDate ?? "Unavailable"}</dd></div><div><dt className="font-bold text-slate-400">Factor breakdown</dt><dd className="mt-1">{Object.entries(market.factorBreakdown).map(([factor, value]) => `${factor}: ${value}`).join(" · ") || "No scoreable factors"}</dd></div></dl>
-        <div className="mt-6">{market.salary.sourceUrl ? <a href={market.salary.sourceUrl} target="_blank" rel="noreferrer" className="font-bold text-cyan-200">{market.salary.sourceName}</a> : <span className="font-bold text-slate-300">Source unavailable</span>}<p className="mt-2 text-xs leading-5 text-slate-500">{market.salary.methodology ?? "Methodology unavailable"}</p></div>
-        <div className="mt-6 grid gap-5 md:grid-cols-2"><div><h4 className="font-black">Limitations</h4><ul className="mt-2 space-y-2 text-sm text-slate-400">{market.limitations.map(item => <li key={item}>• {item}</li>)}</ul></div><div><h4 className="font-black">Next actions</h4><ul className="mt-2 space-y-2 text-sm text-slate-400">{market.nextActions.map(item => <li key={item}>• {item}</li>)}</ul></div></div>
-        {!advanced && <div className="mt-6 rounded-xl border border-white/10 bg-black/15 p-4 text-sm text-slate-400"><span className="font-black text-white">Advanced report foundation ready.</span> Detailed skill-gap planning, alerts and advanced comparisons can be enabled by entitlement later; no price is configured.</div>}
+        <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-2"><div><dt className="font-bold text-slate-400">Hiring outlook</dt><dd className="mt-1">{market.hiringOutlook.value ?? "Unavailable"}</dd></div><div><dt className="font-bold text-slate-400">Demand</dt><dd className="mt-1">{market.demand.value ?? "Unavailable"}</dd></div><div><dt className="font-bold text-slate-400">Evidence freshness</dt><dd className="mt-1">Observation period: {market.salary.observationDate ?? "Unavailable"}</dd></div><div><dt className="font-bold text-slate-400">Factor breakdown</dt><dd className="mt-1">{deepFactors ? Object.entries(market.factorBreakdown).map(([factor, value]) => `${factor}: ${value}`).join(" · ") || "No scoreable factors" : "Requires Pro"}</dd></div></dl>
+        <div className="mt-6"><div className="mb-2 text-xs font-black uppercase tracking-wider text-emerald-300">{market.dataOrigin === "published" ? "Verified published live profile" : "Verified live fallback profile"}</div>{market.salary.sourceUrl ? <a href={market.salary.sourceUrl} target="_blank" rel="noreferrer" className="font-bold text-cyan-200">{market.salary.sourceName}</a> : <span className="font-bold text-slate-300">Source unavailable</span>}<p className="mt-1 text-xs text-slate-400">Observation period: {market.salary.observationDate ?? "Unavailable"}</p><p className="mt-2 text-xs leading-5 text-slate-500">{market.salary.methodology ?? "Methodology unavailable"}</p><p className="mt-2 text-xs text-slate-500">Pending or unapproved research is never included in this report.</p></div>
+        {advanced && <div className="mt-6 grid gap-5 md:grid-cols-2"><div><h4 className="font-black">Limitations</h4><ul className="mt-2 space-y-2 text-sm text-slate-400">{market.limitations.map(item => <li key={item}>• {item}</li>)}</ul></div><div><h4 className="font-black">Next actions</h4><ul className="mt-2 space-y-2 text-sm text-slate-400">{market.nextActions.map(item => <li key={item}>• {item}</li>)}</ul></div></div>}
+        {!advanced && <div className="mt-6 rounded-xl border border-amber-300/15 bg-black/15 p-4 text-sm text-slate-400"><span className="font-black text-amber-100">Detailed recommendations and factor evidence require Pro.</span> The Free preview keeps verified benchmarks, confidence and coverage visible. <Link href="/pro" onClick={() => trackMonetizationEvent("pro_feature_viewed", { feature: "advancedReport", route: "opportunity-report" })} className="font-bold text-emerald-300">See Pro features</Link></div>}
       </article>)}</div> : <div className="glass-subtle mt-6 rounded-2xl border p-8 text-center"><h3 className="font-black">No verified market profile matches these inputs</h3><p className="mt-2 text-sm text-slate-400">Choose the United States, Sweden or Germany for one of the seven supported careers.</p></div>}
     </section>}
   </div>;

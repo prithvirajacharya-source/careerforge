@@ -7,7 +7,7 @@ export type CareerResearchTarget = {
   countryName: string;
   countryCode: string;
   nativeCurrency: string;
-  sourceType: "scb-pxweb" | "bls-oews-api";
+  sourceType: "scb-pxweb" | "bls-oews-api" | "ssb-pxweb" | "statfin-pxweb";
   occupationCode: string;
   sourceUrl?: string;
   endpoint: string;
@@ -15,6 +15,10 @@ export type CareerResearchTarget = {
 };
 
 export const CAREER_RESEARCH_TARGETS: CareerResearchTarget[] = [
+  { careerSlug:"mechanical-engineer",careerName:"Mechanical Engineer",countrySlug:"norway",countryName:"Norway",countryCode:"NO",nativeCurrency:"NOK",sourceType:"ssb-pxweb",occupationCode:"2144",sourceUrl:"https://www.ssb.no/en/statbank/table/11418",endpoint:"/api/research/career-market",enabled:true },
+  { careerSlug:"registered-nurse",careerName:"Registered Nurse",countrySlug:"norway",countryName:"Norway",countryCode:"NO",nativeCurrency:"NOK",sourceType:"ssb-pxweb",occupationCode:"2221",sourceUrl:"https://www.ssb.no/en/statbank/table/11418",endpoint:"/api/research/career-market",enabled:true },
+  { careerSlug:"mechanical-engineer",careerName:"Mechanical Engineer",countrySlug:"finland",countryName:"Finland",countryCode:"FI",nativeCurrency:"EUR",sourceType:"statfin-pxweb",occupationCode:"2144",sourceUrl:"https://pxweb2.stat.fi/PxWeb/pxweb/en/StatFin/StatFin__pra/15au.px/",endpoint:"/api/research/career-market",enabled:true },
+  { careerSlug:"registered-nurse",careerName:"Registered Nurse",countrySlug:"finland",countryName:"Finland",countryCode:"FI",nativeCurrency:"EUR",sourceType:"statfin-pxweb",occupationCode:"2221",sourceUrl:"https://pxweb2.stat.fi/PxWeb/pxweb/en/StatFin/StatFin__pra/15au.px/",endpoint:"/api/research/career-market",enabled:true },
   {
     careerSlug: "mechanical-engineer",
     careerName: "Mechanical Engineer",

@@ -13,5 +13,5 @@ const countries = [
 
 export default function ProfilePage() {
   const careers = Object.values(careerProfiles).filter(career => ["mechanical-engineer", "cybersecurity-analyst", "software-engineer", "electrical-engineer", "data-scientist", "registered-nurse", "accountant"].includes(career.slug)).map(({ slug, title }) => ({ slug, title }));
-  return <main className="sekur-intelligence min-h-screen text-white"><SiteHeader /><section className="mx-auto max-w-7xl px-5 py-12 sm:px-6 sm:py-16"><ProfileGate careers={careers} countries={countries} /></section></main>;
+  return <main className="sekur-intelligence min-h-screen text-white"><SiteHeader /><section className="mx-auto max-w-6xl px-5 py-12 sm:px-6 sm:py-16"><ProfileGate careers={careers} countries={countries} /></section></main>;
 }

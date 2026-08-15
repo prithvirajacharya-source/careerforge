@@ -34,7 +34,7 @@ export function validateCareerResearchPublication(run: PublishableResearchRun) {
   }
 
   const target = getCareerResearchTarget(run.career_slug, run.country_slug);
-  if (!target?.enabled) {
+  if (!target?.enabled || !["sweden", "united-states"].includes(run.country_slug)) {
     throw new Error("Publishing supports only enabled career research targets.");
   }
   validateCareerResearchCandidate(candidate, target.nativeCurrency);

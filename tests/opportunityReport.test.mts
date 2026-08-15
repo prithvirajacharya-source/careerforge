@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { generateOpportunityReport } from "../lib/personalization/report.ts";
+import { generateOpportunityReport, opportunityRankLabel } from "../lib/personalization/report.ts";
 import { getCareerCountryProfiles } from "../lib/careerCountryProfiles.ts";
 import type { CareerProfile } from "../lib/careerModel.ts";
 
@@ -19,6 +19,14 @@ test("opportunity report uses existing evidence and preserves missing data", () 
   assert.equal(us.ranking.coverage, 20);
   assert.equal(us.ranking.score, null);
   assert.match(us.limitations.join(" "), /different currencies/);
+});
+
+test("insufficient markets never receive a numeric rank", () => {
+  const report = generateOpportunityReport(baseProfile, career, getCareerCountryProfiles(career.slug));
+  const validIndex = report.markets.findIndex(market => market.ranking.score !== null);
+  const insufficientIndex = report.markets.findIndex(market => market.ranking.score === null);
+  assert.match(opportunityRankLabel(report.markets, validIndex), /^#1 ranked market$/);
+  assert.equal(opportunityRankLabel(report.markets, insufficientIndex), "Insufficient evidence for ranking");
 });
 
 test("missing target evidence produces no fabricated market", () => {

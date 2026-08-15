@@ -9,7 +9,7 @@ import { normalizeScbSalaryResponse } from "../lib/careerResearch/scb.ts";
 import { validateCareerResearchCandidate } from "../lib/careerResearch/model.ts";
 import { careerCountryProfiles } from "../lib/careerCountryProfiles.ts";
 
-const target = CAREER_RESEARCH_TARGETS[0];
+const target = getCareerResearchTarget("mechanical-engineer", "sweden")!;
 const researchedAt = "2026-08-10T12:00:00.000Z";
 const fixture = {
   id: ["Sektor", "Yrke2012", "Kon", "ContentsCode", "Tid"],
@@ -24,7 +24,7 @@ const fixture = {
 
 test("registry retains all seven existing Swedish SCB targets", () => {
   const swedenTargets = CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "sweden");
-  assert.equal(CAREER_RESEARCH_TARGETS.length, 14);
+  assert.equal(CAREER_RESEARCH_TARGETS.length, 18);
   assert.equal(swedenTargets.length, 7);
   assert.equal(target.careerSlug, "mechanical-engineer");
   assert.equal(target.countrySlug, "sweden");

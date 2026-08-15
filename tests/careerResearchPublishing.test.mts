@@ -9,10 +9,10 @@ import {
   type PublishedCareerMarketProfile,
 } from "../lib/careerMarketProfiles.ts";
 import { validateCareerResearchPublication } from "../lib/careerResearch/publishing.ts";
-import { CAREER_RESEARCH_TARGETS } from "../lib/careerResearch/registry.ts";
+import { CAREER_RESEARCH_TARGETS, getCareerResearchTarget } from "../lib/careerResearch/registry.ts";
 import { normalizeScbSalaryResponse } from "../lib/careerResearch/scb.ts";
 
-const target = CAREER_RESEARCH_TARGETS[0];
+const target = getCareerResearchTarget("mechanical-engineer", "sweden")!;
 const scbFixture = {
   id: ["Sektor", "Yrke2012", "Kon", "ContentsCode", "Tid"],
   size: [1, 1, 1, 3, 1],

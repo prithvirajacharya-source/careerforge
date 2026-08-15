@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { trackMonetizationEvent } from "@/lib/personalization/analytics";
 
 type SaveTarget = { itemType: "career" | "country" | "career_market"; careerSlug?: string; countrySlug?: string; label?: string };
 
@@ -31,7 +32,7 @@ export default function SaveIntelligenceControl({ itemType, careerSlug, countryS
       if (!error) setSavedId(null);
     } else {
       const { data, error } = await supabase.from("saved_career_markets").insert({ user_id: userId, item_type: itemType, career_slug: careerSlug ?? null, country_slug: countrySlug ?? null }).select("id").single();
-      if (!error) setSavedId(data.id);
+      if (!error) { setSavedId(data.id); trackMonetizationEvent("save_created", { itemType, careerSlug: careerSlug ?? "", countrySlug: countrySlug ?? "" }); }
     }
     setBusy(false);
   }

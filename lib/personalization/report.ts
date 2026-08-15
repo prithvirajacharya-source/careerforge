@@ -16,6 +16,7 @@ export type OpportunityReportMarket = {
   hiringOutlook: CareerCountryProfile["hiringOutlook"];
   demand: CareerCountryProfile["demand"];
   education: CareerCountryProfile["education"];
+  dataOrigin: CareerCountryProfile["dataOrigin"];
   ranking: ReturnType<typeof calculateOpportunityRanking>;
   factorBreakdown: Parameters<typeof calculateOpportunityRanking>[0];
   limitations: string[];
@@ -42,8 +43,14 @@ export function generateOpportunityReport(profile: UserCareerProfile, career: Ca
       ...(market.education?.certifications?.length ? [`Verify whether these credentials apply to you: ${market.education.certifications.join(", ")}.`] : ["Confirm qualification and licensing requirements with the responsible authority."]),
       "Validate relocation, work authorization and tax questions with qualified official or professional sources.",
     ];
-    return { careerSlug: career.slug, countrySlug: market.countrySlug, salary: market.salary, hiringOutlook: market.hiringOutlook, demand: market.demand, education: market.education, ranking: calculateOpportunityRanking(evidence), factorBreakdown: evidence, limitations, nextActions };
+    return { careerSlug: career.slug, countrySlug: market.countrySlug, salary: market.salary, hiringOutlook: market.hiringOutlook, demand: market.demand, education: market.education, dataOrigin: market.dataOrigin, ranking: calculateOpportunityRanking(evidence), factorBreakdown: evidence, limitations, nextActions };
   });
   results.sort((a, b) => (b.ranking.score ?? -1) - (a.ranking.score ?? -1) || b.ranking.coverage - a.ranking.coverage);
   return { methodologyVersion: "opportunity-ranking-v1" as const, generatedAt: new Date().toISOString(), careerSlug: career.slug, markets: results, disclaimer: "SEKUR provides career intelligence, not immigration, legal, tax, licensing or visa advice." };
+}
+
+export function opportunityRankLabel(markets: OpportunityReportMarket[], index: number) {
+  if (markets[index]?.ranking.score === null) return "Insufficient evidence for ranking";
+  const rank = markets.slice(0, index + 1).filter(market => market.ranking.score !== null).length;
+  return `#${rank} ranked market`;
 }

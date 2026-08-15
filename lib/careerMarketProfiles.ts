@@ -87,6 +87,7 @@ export function mapPublishedCareerMarketProfile(
     employmentRisk: sourcedField(row.employment_risk),
     education: row.education?.value ?? null,
     notes: row.notes ?? [],
+    dataOrigin: "published",
   };
 }
 

@@ -21,6 +21,7 @@ export type CareerCountryProfile = {
   employmentRisk: SourcedMarketField;
   education: EducationResearch | null;
   notes: string[];
+  dataOrigin?: "published";
 };
 
 export type CareerCountryMarket = {

@@ -11,6 +11,8 @@ import { getCareerResearchCountrySource } from "@/lib/careerResearch/countryRegi
 import { likelySourceFormatDrift, sourceHealthStatus } from "@/lib/careerResearch/sourceHealth";
 import { collectCareerResearch } from "@/lib/careerResearch/runner";
 import { getCareerCountryProfile } from "@/lib/careerCountryProfiles";
+import { researchPendingSalary } from "@/lib/careerModel";
+import { unavailableMarketField } from "@/lib/careerCountryModel";
 import {
   createCareerResearchReviewUpdate,
   type CareerResearchDecision,
@@ -45,6 +47,9 @@ async function recordSourceHealth(supabase: SupabaseClient, target: CareerResear
     const now = new Date().toISOString();
     const failureMessage = error instanceof Error ? error.message : error ? String(error) : null;
     const failures = failureMessage ? Number(previous?.consecutive_failures ?? 0) + 1 : 0;
+    const refreshDays = countrySource.refreshAfterDays;
+    const successfulAt = failureMessage ? previous?.last_successful_fetch ?? null : now;
+    const nextExpectedRefresh = successfulAt && refreshDays ? new Date(new Date(successfulAt).getTime() + refreshDays * 86_400_000).toISOString() : null;
     await supabase.from("career_research_source_health").upsert({
       source_key: target.sourceType,
       source_system: countrySource.sourceSystem,
@@ -55,6 +60,9 @@ async function recordSourceHealth(supabase: SupabaseClient, target: CareerResear
       last_failure_reason: failureMessage,
       consecutive_failures: failures,
       format_drift_detected: failureMessage ? likelySourceFormatDrift(failureMessage) : false,
+      expected_refresh_days: refreshDays,
+      next_expected_refresh: nextExpectedRefresh,
+      stale: Boolean(nextExpectedRefresh && new Date(nextExpectedRefresh) < new Date(now)),
       checked_at: now,
       updated_at: now,
     });
@@ -76,8 +84,16 @@ async function collectAndStoreResearch(
     await recordSourceHealth(supabase, target, error);
     throw error;
   }
-  const liveProfile = getCareerCountryProfile(target.careerSlug, target.countrySlug);
-  if (!liveProfile) throw new Error("The live career-market profile does not exist.");
+  const liveProfile = getCareerCountryProfile(target.careerSlug, target.countrySlug) ?? {
+    careerSlug: target.careerSlug,
+    countrySlug: target.countrySlug,
+    salary: researchPendingSalary(),
+    hiringOutlook: unavailableMarketField(),
+    demand: unavailableMarketField(),
+    employmentRisk: unavailableMarketField(),
+    education: null,
+    notes: ["No verified live profile is published for this research-only target."],
+  };
 
   const { data, error } = await supabase
     .from("career_research_runs")
