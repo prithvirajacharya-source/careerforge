@@ -27,7 +27,7 @@ test("country registry preserves native currencies and authoritative sources", (
 });
 
 test("automation includes validated Sweden, United States, Norway and Finland targets only", () => {
-  assert.equal(CAREER_RESEARCH_TARGETS.length, 18);
+  assert.equal(CAREER_RESEARCH_TARGETS.length, 24);
   assert.ok(CAREER_RESEARCH_TARGETS.every((target) => ["sweden", "united-states", "norway", "finland"].includes(target.countrySlug)));
   assert.equal(getCareerResearchTarget("mechanical-engineer", "norway")?.occupationCode, "2144");
   assert.equal(getCareerResearchTarget("registered-nurse", "finland")?.occupationCode, "2221");
