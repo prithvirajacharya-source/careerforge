@@ -7,6 +7,8 @@ import {
   type CareerResearchTarget,
 } from "@/lib/careerResearch/registry";
 import { planBulkCareerResearch } from "@/lib/careerResearch/freshness";
+import { getCareerResearchCountrySource } from "@/lib/careerResearch/countryRegistry";
+import { likelySourceFormatDrift, sourceHealthStatus } from "@/lib/careerResearch/sourceHealth";
 import { collectCareerResearch } from "@/lib/careerResearch/runner";
 import { getCareerCountryProfile } from "@/lib/careerCountryProfiles";
 import {
@@ -33,12 +35,47 @@ function errorStatus(message: string) {
   return 400;
 }
 
+async function recordSourceHealth(supabase: SupabaseClient, target: CareerResearchTarget, error?: unknown) {
+  try {
+    const countrySource = getCareerResearchCountrySource(target.countrySlug);
+    if (!countrySource) return;
+    const { data: previous } = await supabase.from("career_research_source_health")
+      .select("consecutive_failures,last_successful_fetch")
+      .eq("source_key", target.sourceType).maybeSingle();
+    const now = new Date().toISOString();
+    const failureMessage = error instanceof Error ? error.message : error ? String(error) : null;
+    const failures = failureMessage ? Number(previous?.consecutive_failures ?? 0) + 1 : 0;
+    await supabase.from("career_research_source_health").upsert({
+      source_key: target.sourceType,
+      source_system: countrySource.sourceSystem,
+      source_url: countrySource.sourceUrl,
+      status: sourceHealthStatus(failures, failureMessage ? previous?.last_successful_fetch : now),
+      last_successful_fetch: failureMessage ? previous?.last_successful_fetch ?? null : now,
+      last_failure: failureMessage ? now : null,
+      last_failure_reason: failureMessage,
+      consecutive_failures: failures,
+      format_drift_detected: failureMessage ? likelySourceFormatDrift(failureMessage) : false,
+      checked_at: now,
+      updated_at: now,
+    });
+  } catch (healthError) {
+    console.error("Career research source-health recording failed:", healthError);
+  }
+}
+
 async function collectAndStoreResearch(
   target: CareerResearchTarget,
   supabase: SupabaseClient,
   userId: string
 ) {
-  const candidate = await collectCareerResearch(target);
+  let candidate;
+  try {
+    candidate = await collectCareerResearch(target);
+    await recordSourceHealth(supabase, target);
+  } catch (error) {
+    await recordSourceHealth(supabase, target, error);
+    throw error;
+  }
   const liveProfile = getCareerCountryProfile(target.careerSlug, target.countrySlug);
   if (!liveProfile) throw new Error("The live career-market profile does not exist.");
 
@@ -91,7 +128,9 @@ export async function GET(request: Request) {
       .order("published_at", { ascending: false })
       .limit(20);
     if (versionsError) throw new Error(`Could not load publication history: ${versionsError.message}`);
-    return NextResponse.json({ target, runs: data ?? [], versions: versions ?? [] });
+    const { data: sourceHealth } = await supabase.from("career_research_source_health")
+      .select("*").eq("source_key", target.sourceType).maybeSingle();
+    return NextResponse.json({ target, runs: data ?? [], versions: versions ?? [], sourceHealth: sourceHealth ?? null });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown career research error.";
     return NextResponse.json({ error: message }, { status: errorStatus(message) });

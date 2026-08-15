@@ -32,7 +32,8 @@ type PublicationVersion = {
   published_at: string;
 };
 
-type ResearchResponse = { message?: string; error?: string; run?: ResearchRun; runs?: ResearchRun[]; versions?: PublicationVersion[]; publication?: { versionId?: number } };
+type SourceHealth = { status: string; last_successful_fetch?: string | null; last_failure?: string | null; last_failure_reason?: string | null; consecutive_failures: number; format_drift_detected: boolean };
+type ResearchResponse = { message?: string; error?: string; run?: ResearchRun; runs?: ResearchRun[]; versions?: PublicationVersion[]; sourceHealth?: SourceHealth | null; publication?: { versionId?: number } };
 type BulkResearchResult = { careerSlug: string; countrySlug: string; status: string; error?: string; researchedAt?: string };
 
 function formatMoney(value: number | null | undefined, currency: string) {
@@ -55,6 +56,7 @@ export default function CareerResearchConsole() {
   const [versions, setVersions] = useState<PublicationVersion[]>([]);
   const [confirmRollback, setConfirmRollback] = useState<number | null>(null);
   const [rollingBack, setRollingBack] = useState(false);
+  const [sourceHealth, setSourceHealth] = useState<SourceHealth | null>(null);
   const target = getCareerResearchTarget(careerSlug, countrySlug);
   const countrySource = getCareerResearchCountrySource(countrySlug);
   const supported = Boolean(target?.enabled);
@@ -91,6 +93,7 @@ export default function CareerResearchConsole() {
       const history = result.runs ?? [];
       setRuns(history);
       setVersions(result.versions ?? []);
+      setSourceHealth(result.sourceHealth ?? null);
       setSelected((current) => current ?? history[0] ?? null);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not load research history.");
@@ -106,6 +109,7 @@ export default function CareerResearchConsole() {
         const history = result.runs ?? [];
         setRuns(history);
         setVersions(result.versions ?? []);
+        setSourceHealth(result.sourceHealth ?? null);
         setSelected(history[0] ?? null);
       })
       .catch((error: unknown) => {
@@ -236,6 +240,7 @@ export default function CareerResearchConsole() {
         <div className={`mt-4 rounded-xl border px-4 py-3 text-sm ${supported ? "border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-200" : "border-slate-400/15 bg-white/[0.025] text-slate-400"}`}>
           {supported ? `Automated research supported · ${target?.careerName} · ${target?.countryName} · ${target?.nativeCurrency} · ${countrySource?.sourceSystem}` : `Automated research ${countrySource?.automationStatus === "discovery" ? "is in source discovery" : "is not supported"} for this combination. ${countrySource?.disabledReason ?? "No fallback conversion or substitute market data will be used."}`}
         </div>
+        {sourceHealth && <div className="mt-3 grid gap-3 rounded-xl border border-white/10 bg-black/15 p-4 text-xs sm:grid-cols-3"><div><div className="font-bold uppercase tracking-wider text-slate-500">Source status</div><div className="mt-1 font-black text-white">{sourceHealth.status}</div></div><div><div className="font-bold uppercase tracking-wider text-slate-500">Last success</div><div className="mt-1 text-slate-300">{sourceHealth.last_successful_fetch ? new Date(sourceHealth.last_successful_fetch).toLocaleString() : "Not recorded"}</div></div><div><div className="font-bold uppercase tracking-wider text-slate-500">Failures</div><div className="mt-1 text-slate-300">{sourceHealth.consecutive_failures}{sourceHealth.format_drift_detected ? " · possible format drift" : ""}</div></div>{sourceHealth.last_failure_reason && <div className="sm:col-span-3"><div className="font-bold uppercase tracking-wider text-slate-500">Last failure</div><div className="mt-1 text-red-200">{sourceHealth.last_failure_reason}</div></div>}</div>}
         <div className="mt-6 rounded-2xl border border-amber-300/15 bg-amber-300/[0.04] p-4 text-sm leading-6 text-amber-100/80">Research and review never change live data. Only the separate, explicit publishing confirmation below can update the supported live profile. Currency conversion is not accepted as local salary evidence.</div>
         {message && <div className="mt-4 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-300">{message}</div>}
         {bulkResults.length > 0 && <details className="mt-4 rounded-xl border border-white/10 bg-black/10 p-4"><summary className="cursor-pointer text-sm font-bold text-slate-300">Latest batch source-health results</summary><div className="mt-3 grid gap-2 sm:grid-cols-2">{bulkResults.map((result) => <div key={`${result.careerSlug}:${result.countrySlug}`} className="rounded-lg border border-white/10 px-3 py-2 text-xs"><div className="font-bold">{result.careerSlug} · {result.countrySlug}</div><div className={result.status === "failed" ? "mt-1 text-red-300" : result.status === "pending_review" ? "mt-1 text-emerald-300" : "mt-1 text-slate-500"}>{result.status.replaceAll("_", " ")}{result.error ? ` · ${result.error}` : ""}</div></div>)}</div></details>}
