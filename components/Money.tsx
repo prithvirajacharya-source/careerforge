@@ -2,6 +2,7 @@
 
 import { useCurrency } from "@/components/CurrencyProvider";
 import { formatCurrency } from "@/lib/currency";
+import { salaryPeriodUnit, type SalaryPeriod } from "@/lib/careerModel";
 
 type MoneyProps = {
   amount: number;
@@ -9,6 +10,7 @@ type MoneyProps = {
   compact?: boolean;
   maximumFractionDigits?: number;
   className?: string;
+  period?: SalaryPeriod;
 };
 
 export default function Money({
@@ -17,6 +19,7 @@ export default function Money({
   compact = false,
   maximumFractionDigits,
   className,
+  period,
 }: MoneyProps) {
   const {
     currency,
@@ -42,7 +45,7 @@ export default function Money({
       {formatCurrency(displayAmount, displayCurrency, {
         compact,
         maximumFractionDigits,
-      })}
+      })}{period ? ` / ${salaryPeriodUnit(period)}` : ""}
     </span>
   );
 }

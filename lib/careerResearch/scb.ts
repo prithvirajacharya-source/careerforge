@@ -75,6 +75,7 @@ export function normalizeScbSalaryResponse(
       typical: annualMetric(typicalMonthly),
       high: annualMetric(highMonthly),
       sourceCurrency: target.nativeCurrency,
+      period: "annual",
       methodology: {
         distribution: "percentiles",
         lowMeasure: "10th percentile",

@@ -27,7 +27,8 @@ export function generateOpportunityReport(profile: UserCareerProfile, career: Ca
   const selected = markets.filter(market => profile.targetCountries.includes(market.countrySlug));
   const results: OpportunityReportMarket[] = selected.map(market => {
     const evidence: Parameters<typeof calculateOpportunityRanking>[0] = {};
-    if (profile.desiredSalary && profile.desiredSalaryCurrency === market.salary.sourceCurrency && market.salary.typical !== null) {
+    const salaryPeriod = market.salary.period ?? "annual";
+    if (profile.desiredSalary && salaryPeriod === "annual" && profile.desiredSalaryCurrency === market.salary.sourceCurrency && market.salary.typical !== null) {
       evidence.salary = Math.min(100, Math.round((market.salary.typical / profile.desiredSalary) * 100));
     }
     if (aiRiskScore[career.aiRisk] !== undefined) evidence.aiRisk = aiRiskScore[career.aiRisk];
@@ -36,6 +37,7 @@ export function generateOpportunityReport(profile: UserCareerProfile, career: Ca
       ...(market.hiringOutlook.value ? [] : ["Hiring outlook is unavailable for this market."]),
       ...(market.demand.value ? [] : ["Demand evidence is unavailable for this market."]),
       ...(profile.desiredSalaryCurrency !== market.salary.sourceCurrency ? ["Salary-goal fit is not scored because the goal and native market salary use different currencies."] : []),
+      ...(profile.desiredSalary && salaryPeriod !== "annual" ? ["Salary-goal fit is not scored because the goal has no matching hourly period."] : []),
       ...(market.education ? [] : ["Country-specific education and licensing evidence is unavailable."]),
     ];
     const nextActions = [

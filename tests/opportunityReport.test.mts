@@ -34,3 +34,11 @@ test("missing target evidence produces no fabricated market", () => {
   assert.deepEqual(report.markets, []);
   assert.match(report.disclaimer, /not immigration/);
 });
+
+test("hourly evidence is never scored against an unperioded salary goal", () => {
+  const annual = getCareerCountryProfiles(career.slug)[0]!;
+  const hourly = { ...annual, countrySlug: "canada", salary: { ...annual.salary, low: 30, typical: 45.67, high: 72.49, sourceCurrency: "CAD", period: "hourly" as const } };
+  const report = generateOpportunityReport({ ...baseProfile, targetCountries: ["canada"], desiredSalary: 50, desiredSalaryCurrency: "CAD" }, career, [hourly]);
+  assert.equal(report.markets[0]?.factorBreakdown.salary, undefined);
+  assert.match(report.markets[0]?.limitations.join(" ") ?? "", /no matching hourly period/);
+});

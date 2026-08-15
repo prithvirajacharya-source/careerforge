@@ -96,6 +96,7 @@ export function normalizeBlsOewsResponse(
       typical: metric(observations.typical),
       high: metric(observations.high),
       sourceCurrency: "USD",
+      period: "annual",
       methodology: {
         distribution: "percentiles",
         lowMeasure: "10th percentile annual wage",

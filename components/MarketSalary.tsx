@@ -21,6 +21,7 @@ export function MarketSalaryValue({
       amount={amount}
       sourceCurrency={salary.sourceCurrency}
       compact={compact}
+      period={salary.period ?? "annual"}
     />
   );
 }

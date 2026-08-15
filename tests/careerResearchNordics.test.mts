@@ -85,9 +85,9 @@ test("Nordic research cannot contaminate source currency or unrelated markets", 
       assert.equal(target.countrySlug, country);
     }
   }
-  assert.equal(getCareerResearchTarget("mechanical-engineer", "denmark"), null);
+  assert.equal(getCareerResearchTarget("mechanical-engineer", "denmark")?.nativeCurrency, "DKK");
+  assert.equal(getCareerResearchTarget("mechanical-engineer", "canada")?.nativeCurrency, "CAD");
   assert.equal(getCareerResearchTarget("mechanical-engineer", "united-kingdom"), null);
-  assert.equal(getCareerResearchTarget("mechanical-engineer", "canada"), null);
   assert.equal(getCareerResearchTarget("mechanical-engineer", "netherlands"), null);
 });
 

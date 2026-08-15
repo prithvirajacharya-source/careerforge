@@ -24,7 +24,7 @@ const fixture = {
 
 test("registry retains all seven existing Swedish SCB targets", () => {
   const swedenTargets = CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "sweden");
-  assert.equal(CAREER_RESEARCH_TARGETS.length, 24);
+  assert.equal(CAREER_RESEARCH_TARGETS.length, 36);
   assert.equal(swedenTargets.length, 7);
   assert.equal(target.careerSlug, "mechanical-engineer");
   assert.equal(target.countrySlug, "sweden");

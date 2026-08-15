@@ -1,10 +1,16 @@
 export type ResearchStatus = "verified" | "estimated" | "needs-research";
+export type SalaryPeriod = "hourly" | "weekly" | "monthly" | "annual";
+
+export function salaryPeriodUnit(period: SalaryPeriod | undefined) {
+  return period === "hourly" ? "hour" : period === "weekly" ? "week" : period === "monthly" ? "month" : "year";
+}
 
 export type SalaryResearch = {
   low: number | null;
   typical: number | null;
   high: number | null;
   sourceCurrency: string | null;
+  period?: SalaryPeriod;
   geography: string | null;
   sourceName: string | null;
   sourceUrl: string | null;
@@ -77,6 +83,7 @@ export function researchPendingSalary(): SalaryResearch {
     typical: null,
     high: null,
     sourceCurrency: null,
+    period: "annual",
     geography: null,
     sourceName: null,
     sourceUrl: null,

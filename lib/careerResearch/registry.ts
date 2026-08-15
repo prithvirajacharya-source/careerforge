@@ -7,7 +7,7 @@ export type CareerResearchTarget = {
   countryName: string;
   countryCode: string;
   nativeCurrency: string;
-  sourceType: "scb-pxweb" | "bls-oews-api" | "ssb-pxweb" | "statfin-pxweb";
+  sourceType: "scb-pxweb" | "bls-oews-api" | "ssb-pxweb" | "statfin-pxweb" | "statbank-dk" | "canada-jobbank-csv";
   occupationCode: string;
   sourceUrl?: string;
   endpoint: string;
@@ -15,6 +15,12 @@ export type CareerResearchTarget = {
 };
 
 export const CAREER_RESEARCH_TARGETS: CareerResearchTarget[] = [
+  ...[
+    ["mechanical-engineer", "Mechanical Engineer", "2144"], ["registered-nurse", "Registered Nurse", "2221"], ["software-engineer", "Software Engineer", "2512"], ["electrical-engineer", "Electrical Engineer", "2151"], ["accountant", "Accountant", "2411"],
+  ].map(([careerSlug, careerName, occupationCode]) => ({ careerSlug, careerName, countrySlug: "denmark", countryName: "Denmark", countryCode: "DK", nativeCurrency: "DKK", sourceType: "statbank-dk" as const, occupationCode, sourceUrl: "https://www.statbank.dk/LONS20", endpoint: "/api/research/career-market", enabled: true })),
+  ...[
+    ["mechanical-engineer", "Mechanical Engineer", "NOC_21301"], ["registered-nurse", "Registered Nurse", "NOC_31301"], ["software-engineer", "Software Engineer", "NOC_21231"], ["electrical-engineer", "Electrical Engineer", "NOC_21310"], ["accountant", "Accountant", "NOC_11100"], ["cybersecurity-analyst", "Cybersecurity Analyst", "NOC_21220"], ["data-scientist", "Data Scientist", "NOC_21211"],
+  ].map(([careerSlug, careerName, occupationCode]) => ({ careerSlug, careerName, countrySlug: "canada", countryName: "Canada", countryCode: "CA", nativeCurrency: "CAD", sourceType: "canada-jobbank-csv" as const, occupationCode, sourceUrl: "https://open.canada.ca/data/en/dataset/adad580f-76b0-4502-bd05-20c125de9116", endpoint: "/api/research/career-market", enabled: true })),
   { careerSlug:"mechanical-engineer",careerName:"Mechanical Engineer",countrySlug:"norway",countryName:"Norway",countryCode:"NO",nativeCurrency:"NOK",sourceType:"ssb-pxweb",occupationCode:"2144",sourceUrl:"https://www.ssb.no/en/statbank/table/11418",endpoint:"/api/research/career-market",enabled:true },
   { careerSlug:"registered-nurse",careerName:"Registered Nurse",countrySlug:"norway",countryName:"Norway",countryCode:"NO",nativeCurrency:"NOK",sourceType:"ssb-pxweb",occupationCode:"2221",sourceUrl:"https://www.ssb.no/en/statbank/table/11418",endpoint:"/api/research/career-market",enabled:true },
   { careerSlug:"software-engineer",careerName:"Software Engineer",countrySlug:"norway",countryName:"Norway",countryCode:"NO",nativeCurrency:"NOK",sourceType:"ssb-pxweb",occupationCode:"2512",sourceUrl:"https://www.ssb.no/en/statbank/table/11418",endpoint:"/api/research/career-market",enabled:true },

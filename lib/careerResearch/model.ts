@@ -1,4 +1,4 @@
-import type { EducationResearch, ResearchStatus } from "../careerModel.ts";
+import type { EducationResearch, ResearchStatus, SalaryPeriod } from "../careerModel.ts";
 
 export type EvidenceProvenance = {
   sourceName: string;
@@ -18,7 +18,7 @@ export type SalaryMethodology = {
   lowMeasure: string;
   typicalMeasure: string;
   highMeasure: string;
-  sourcePeriod: "annual" | "monthly";
+  sourcePeriod: SalaryPeriod;
   normalization: string;
 };
 
@@ -32,6 +32,7 @@ export type CareerResearchCandidate = {
     typical: ResearchedMetric<number>;
     high: ResearchedMetric<number>;
     sourceCurrency: string;
+    period?: SalaryPeriod;
     methodology: SalaryMethodology;
     verificationStatus: ResearchStatus;
   };
@@ -56,6 +57,10 @@ export function validateCareerResearchCandidate(
   candidate: CareerResearchCandidate,
   expectedCurrency: string
 ) {
+  const period = candidate.salary.period ?? "annual";
+  if (!["hourly", "weekly", "monthly", "annual"].includes(period)) {
+    throw new Error(`Unsupported salary evidence period: ${period}.`);
+  }
   if (candidate.salary.sourceCurrency !== expectedCurrency) {
     throw new Error(
       `Local salary evidence must use ${expectedCurrency}; received ${candidate.salary.sourceCurrency}.`

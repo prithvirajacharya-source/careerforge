@@ -1,0 +1,8 @@
+NOC_CNP,NOC_Title_eng,prov,ER_Code_Code_RE,Low_Wage_Salaire_Minium,Median_Wage_Salaire_Median,High_Wage_Salaire_Maximal,Reference_Period,Annual_Wage_Flag_Salaire_annuel
+NOC_21301,Mechanical engineers,NAT,ER00,30,45.67,72.49,2023-2024,0
+NOC_31301,Registered nurses,NAT,ER00,30,43.27,54.37,2023-2024,0
+NOC_21231,Software engineers,NAT,ER00,35,56.49,91.35,2023-2024,0
+NOC_21310,Electrical engineers,NAT,ER00,33.65,50.67,79.23,2023-2024,0
+NOC_11100,Accountants,NAT,ER00,25,40.36,71.43,2023-2024,0
+NOC_21220,Cybersecurity specialists,NAT,ER00,30,49.52,72.12,2023-2024,0
+NOC_21211,Data scientists,NAT,ER00,30,46.15,69.74,2023-2024,0

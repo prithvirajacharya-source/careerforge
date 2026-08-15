@@ -26,12 +26,13 @@ test("country registry preserves native currencies and authoritative sources", (
   assert.ok(CAREER_RESEARCH_COUNTRY_SOURCES.every((country) => country.sourceUrl.startsWith("https://")));
 });
 
-test("automation includes validated Sweden, United States, Norway and Finland targets only", () => {
-  assert.equal(CAREER_RESEARCH_TARGETS.length, 24);
-  assert.ok(CAREER_RESEARCH_TARGETS.every((target) => ["sweden", "united-states", "norway", "finland"].includes(target.countrySlug)));
+test("automation includes only validated source-system targets", () => {
+  const automatedCountries = ["sweden", "united-states", "norway", "finland", "denmark", "canada"];
+  assert.equal(CAREER_RESEARCH_TARGETS.length, 36);
+  assert.ok(CAREER_RESEARCH_TARGETS.every((target) => automatedCountries.includes(target.countrySlug)));
   assert.equal(getCareerResearchTarget("mechanical-engineer", "norway")?.occupationCode, "2144");
   assert.equal(getCareerResearchTarget("registered-nurse", "finland")?.occupationCode, "2221");
-  for (const country of CAREER_RESEARCH_COUNTRY_SOURCES.filter((item) => !["sweden", "united-states", "norway", "finland"].includes(item.slug))) {
+  for (const country of CAREER_RESEARCH_COUNTRY_SOURCES.filter((item) => !automatedCountries.includes(item.slug))) {
     assert.equal(getCareerResearchTarget("mechanical-engineer", country.slug), null);
     assert.ok(country.disabledReason);
   }

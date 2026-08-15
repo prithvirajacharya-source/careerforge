@@ -1,4 +1,5 @@
 import test from "node:test"; import assert from "node:assert/strict"; import {readFileSync} from "node:fs"; import {resolveEntitlements} from "../lib/personalization/entitlements.ts"; import {validateAlertPreferences} from "../lib/personalization/alerts.ts"; import {sanitizeAnalyticsPayload} from "../lib/personalization/analytics.ts"; import {buildCareerSwitchPlan} from "../lib/personalization/careerSwitch.ts"; import {buildSalaryNegotiationReport} from "../lib/personalization/salaryNegotiation.ts"; import {getCareerCountryProfiles,getCareerCountryProfile} from "../lib/careerCountryProfiles.ts"; import type {CareerProfile} from "../lib/careerModel.ts"; import {convertCurrency} from "../lib/currency.ts";
+import type { CareerCountryProfile } from "../lib/careerCountryModel.ts";
 
 test("Free and Pro capabilities gate monetization features",()=>{const free=resolveEntitlements("free"),pro=resolveEntitlements("pro");assert.equal(free.basicReport,true);assert.equal(free.careerSwitchPlanner,false);assert.equal(free.salaryNegotiationReport,false);assert.equal(free.alerts,false);assert.equal(pro.careerSwitchPlanner,true);assert.equal(pro.salaryNegotiationReport,true);assert.equal(pro.deepFactorBreakdown,true)});
 test("alert preferences validate supported nonempty selections",()=>{assert.deepEqual(validateAlertPreferences(["salary_updated","salary_updated"]),["salary_updated"]);assert.throws(()=>validateAlertPreferences([]),/at least one/);assert.throws(()=>validateAlertPreferences(["email_everything"]),/Unsupported/)});
@@ -7,3 +8,21 @@ test("career switch preserves missing evidence rather than fabricating gaps",()=
 test("salary negotiation uses native evidence and keeps FX display-only",()=>{const market=getCareerCountryProfile("mechanical-engineer","sweden")!;const report=buildSalaryNegotiationReport(market,621600);assert.equal(report.status,"ready");assert.equal(report.market?.salary.sourceCurrency,"SEK");const converted=convertCurrency(621600,"SEK","INR",{USD:1,SEK:10,INR:80});assert.equal(converted,4972800);assert.equal(market.salary.typical,621600)});
 test("analytics payload strips private and unexpected fields",()=>{assert.deepEqual(sanitizeAnalyticsPayload({feature:"alerts",careerSlug:"accountant",skills:["secret"],email:"x@example.com",desiredSalary:500000}),{feature:"alerts",careerSlug:"accountant"})});
 test("Opportunity Report locks deep output for Free users",()=>{const source=readFileSync(new URL("../components/user/OpportunityReportClient.tsx",import.meta.url),"utf8");assert.match(source,/deepFactors \? Object\.entries\(market\.factorBreakdown\)/);assert.match(source,/Detailed recommendations and factor evidence require Pro/)});
+
+test("salary negotiation preserves an hourly market benchmark", () => {
+  const annual = getCareerCountryProfile("mechanical-engineer", "sweden")!;
+  const hourly = { ...annual, countrySlug: "canada", salary: { ...annual.salary, low: 30, typical: 45.67, high: 72.49, sourceCurrency: "CAD", period: "hourly" as const } };
+  const report = buildSalaryNegotiationReport(hourly, 45.67);
+  assert.equal(report.position, "at the typical benchmark");
+  assert.equal(report.market?.salary.period, "hourly");
+  assert.deepEqual(report.discussionRange, { low: 45.67, high: 72.49 });
+});
+
+test("career switch refuses to subtract annual and hourly salaries", () => {
+  const careers = [{ slug: "mechanical-engineer", title: "Mechanical Engineer", skills: [], aiRisk: "Low", remote: "Medium" }, { slug: "software-engineer", title: "Software Engineer", skills: [], aiRisk: "Medium", remote: "High" }] as unknown as CareerProfile[];
+  const annual = getCareerCountryProfile("mechanical-engineer", "sweden")!;
+  const hourly = { ...annual, careerSlug: "software-engineer", salary: { ...annual.salary, low: 30, typical: 45.67, high: 72.49, period: "hourly" as const } } as CareerCountryProfile;
+  const plan = buildCareerSwitchPlan({ currentCareerSlug: "mechanical-engineer", targetCareerSlug: "software-engineer", currentCountrySlug: "sweden", targetCountrySlug: "sweden", skills: [], educationLevel: null, yearsExperience: null, timeHorizon: "12 months" }, careers, [annual, hourly]);
+  assert.equal(plan.salaryDifference, null);
+  assert.match(plan.limitations.join(" "), /different evidence periods/);
+});

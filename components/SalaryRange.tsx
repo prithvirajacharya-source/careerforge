@@ -18,13 +18,13 @@ export default function SalaryRange({
 
   return (
     <span>
-      <Money amount={salary.low as number} sourceCurrency={salary.sourceCurrency} compact={compact} />
+      <Money amount={salary.low as number} sourceCurrency={salary.sourceCurrency} compact={compact} period={salary.period ?? "annual"} />
       {" \u2013 "}
-      <Money amount={salary.high as number} sourceCurrency={salary.sourceCurrency} compact={compact} />
+      <Money amount={salary.high as number} sourceCurrency={salary.sourceCurrency} compact={compact} period={salary.period ?? "annual"} />
       {showTypical && (
         <span className="block text-sm font-medium text-slate-400">
           Typical: {" "}
-          <Money amount={salary.typical as number} sourceCurrency={salary.sourceCurrency} compact={compact} />
+          <Money amount={salary.typical as number} sourceCurrency={salary.sourceCurrency} compact={compact} period={salary.period ?? "annual"} />
         </span>
       )}
     </span>

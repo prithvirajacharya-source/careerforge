@@ -166,7 +166,7 @@ export default async function CareerPage({
           <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-5 sm:p-7">
             <div>
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">Annual salary</p>
+                <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">{(salary.period ?? "annual") === "annual" ? "Annual salary" : `${salary.period} wage`}</p>
                 <h2 className="mt-2 text-2xl font-black">Compare the market range</h2>
               </div>
             </div>
