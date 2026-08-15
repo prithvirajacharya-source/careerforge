@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import CareerCountrySelector from "@/components/CareerCountrySelector";
 import MarketSalary, { SalaryComparison } from "@/components/MarketSalary";
-import ScoreCard from "@/components/ScoreCard";
 import SalaryRange from "@/components/SalaryRange";
 import SiteHeader from "@/components/SiteHeader";
 import SaveIntelligenceControl from "@/components/user/SaveIntelligenceControl";
@@ -109,18 +108,11 @@ export default async function CareerPage({
   const hiring = selectedMarketProfile
     ? selectedMarketProfile.hiringOutlook.value ?? "Not published"
     : career.hiring;
-  const demand = selectedMarketProfile
-    ? selectedMarketProfile.demand.value ?? "Not published"
-    : career.demand;
-  const employmentRisk = selectedMarketProfile
-    ? selectedMarketProfile.employmentRisk.value ?? "Not published"
-    : career.layoffs;
-
   return (
     <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
       <SiteHeader />
       <section className="mx-auto max-w-7xl px-5 pb-12 pt-12 sm:px-6 sm:pb-14 sm:pt-16">
-        <div className="grid gap-10 lg:grid-cols-[1fr_360px] lg:items-end">
+        <div className="max-w-4xl">
           <div className="max-w-4xl">
             <div className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">{career.category}</div>
             <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl md:text-7xl">
@@ -132,7 +124,7 @@ export default async function CareerPage({
               )}
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-400">{career.description}</p>
-            <div className="mt-5 flex flex-wrap gap-2"><SaveIntelligenceControl itemType="career" careerSlug={career.slug} label="Save career" />{selectedCountrySlug && <><SaveIntelligenceControl itemType="career_market" careerSlug={career.slug} countrySlug={selectedCountrySlug} label="Save market" /><AlertPreferencesControl careerSlug={career.slug} countrySlug={selectedCountrySlug} /></>}</div>
+            <div className="mt-5"><SaveIntelligenceControl itemType={selectedCountrySlug ? "career_market" : "career"} careerSlug={career.slug} countrySlug={selectedCountrySlug} label="Save this opportunity" /></div>
             {selectedMarketProfile && selectedMarket && (
               <CareerCountrySelector
                 careerTitle={career.title}
@@ -141,24 +133,14 @@ export default async function CareerPage({
               />
             )}
           </div>
-          <ScoreCard title="SEKUR Career Score" score={career.score} items={[
-            { label: "Salary", value: salaryValue },
-            { label: "Hiring", value: hiring },
-            { label: "AI Risk", value: career.aiRisk },
-            { label: "Remote Work", value: career.remote },
-          ]} />
         </div>
       </section>
 
-      <section className={`mx-auto grid max-w-7xl gap-4 px-5 sm:px-6 ${selectedMarketProfile ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" : "grid-cols-2 md:grid-cols-4"}`}>
-        <Metric label="Salary" value={salaryValue} />
-        <Metric label="Hiring" value={hiring} />
-        <Metric label="Employment risk" value={employmentRisk} />
+      <section className="mx-auto grid max-w-7xl gap-4 px-5 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
+        <Metric label="Typical salary" value={salaryValue} />
+        <Metric label="Job outlook" value={hiring} />
         <Metric label="AI risk" value={career.aiRisk} />
-        <Metric label="Remote" value={career.remote} />
-        <Metric label="Demand" value={demand} />
-        <Metric label="Work-life" value={career.workLife} />
-        <Metric label="Education" value={education} />
+        <Metric label="Remote flexibility" value={career.remote} />
       </section>
 
       {salary && (
@@ -185,25 +167,14 @@ export default async function CareerPage({
                 Changing the global currency changes only how these amounts are displayed. The underlying salary data remains from the {selectedMarket?.name} labour market in {salary.sourceCurrency}.
               </p>
             )}
-            <dl className="mt-6 grid gap-5 border-t border-white/10 pt-6 text-sm sm:grid-cols-2 xl:grid-cols-4">
-              <div><dt className="text-slate-500">Geography</dt><dd className="mt-1 font-semibold leading-6">{salary.geography ?? "Unavailable"}</dd></div>
-              <div><dt className="text-slate-500">Source</dt><dd className="mt-1 font-semibold leading-6">{salary.sourceUrl && salary.sourceName ? <a href={salary.sourceUrl} target="_blank" rel="noreferrer" className="text-blue-300 hover:text-blue-200">{salary.sourceName}</a> : "Unavailable"}</dd></div>
-              <div><dt className="text-slate-500">Observation period</dt><dd className="mt-1 font-semibold leading-6">{salary.observationDate ?? "Unavailable"}</dd></div>
-              <div><dt className="text-slate-500">Status</dt><dd className="mt-2"><ResearchBadge status={salary.verificationStatus} /></dd></div>
-            </dl>
-            {salary.methodology && (
-              <details className="mt-5 border-t border-white/10 pt-5 text-sm">
-                <summary className="cursor-pointer font-semibold text-slate-300">How this range is calculated</summary>
-                <p className="mt-3 max-w-4xl leading-6 text-slate-500">{salary.methodology}</p>
-              </details>
-            )}
+            <details className="mt-6 border-t border-white/10 pt-5 text-sm"><summary className="cursor-pointer font-bold text-slate-300">Sources &amp; methodology</summary><dl className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-4"><div><dt className="text-slate-500">Location covered</dt><dd className="mt-1 font-semibold leading-6">{salary.geography ?? "Unavailable"}</dd></div><div><dt className="text-slate-500">Source</dt><dd className="mt-1 font-semibold leading-6">{salary.sourceUrl && salary.sourceName ? <a href={salary.sourceUrl} target="_blank" rel="noreferrer" className="text-blue-300 hover:text-blue-200">{salary.sourceName}</a> : "Unavailable"}</dd></div><div><dt className="text-slate-500">Data period</dt><dd className="mt-1 font-semibold leading-6">{salary.observationDate ?? "Unavailable"}</dd></div><div><dt className="text-slate-500">Data quality</dt><dd className="mt-2"><ResearchBadge status={salary.verificationStatus} /></dd></div></dl>{salary.methodology && <p className="mt-5 max-w-4xl leading-6 text-slate-500">{salary.methodology}</p>}</details>
           </div>
         </section>
       )}
 
       {selectedMarketProfile && (
         <section className="mx-auto max-w-7xl px-6 pt-12">
-          <div className="grid gap-4 lg:grid-cols-3">
+          <details className="rounded-3xl border border-white/10 bg-white/[0.025] p-6"><summary className="cursor-pointer text-xl font-black">More labour-market detail</summary><div className="mt-6 grid gap-4 lg:grid-cols-3">
             {[
               ["Hiring outlook", selectedMarketProfile.hiringOutlook],
               ["Demand", selectedMarketProfile.demand],
@@ -238,9 +209,11 @@ export default async function CareerPage({
                 {selectedMarketProfile.notes.map((note) => <li key={note}>{note}</li>)}
               </ul>
             </div>
-          )}
+          )}</details>
         </section>
       )}
+
+      {selectedCountrySlug && <section className="mx-auto max-w-7xl px-6 pt-12"><div className="glass-panel rounded-3xl border p-6 sm:flex sm:items-center sm:justify-between sm:gap-8"><div><h2 className="text-2xl font-black">Want a recommendation for your situation?</h2><p className="mt-2 text-slate-400">Use your goals and preferences to compare this opportunity with other markets.</p></div><Link href="/opportunity-report" className="mt-5 inline-block rounded-xl bg-emerald-300 px-5 py-3 font-black text-slate-950 sm:mt-0">Build my Opportunity Report</Link></div><details className="mt-4 rounded-2xl border border-white/10 p-5"><summary className="cursor-pointer font-bold text-slate-300">Get updates when this changes</summary><div className="mt-4"><AlertPreferencesControl careerSlug={career.slug} countrySlug={selectedCountrySlug} /></div></details></section>}
 
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid gap-8 lg:grid-cols-2">

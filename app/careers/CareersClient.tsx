@@ -33,21 +33,17 @@ export default function CareersClient({ careers, initialSearch = "", initialCate
       <SiteHeader />
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="max-w-3xl">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">Career Explorer</p>
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">Explore</p>
           <h1 className="mt-4 text-5xl font-black tracking-tight md:text-6xl">
             Find a career that fits
             <span className="block bg-gradient-to-r from-blue-400 to-emerald-300 bg-clip-text text-transparent">your goals.</span>
           </h1>
-          <p className="mt-6 text-lg leading-8 text-slate-400">Search and compare careers by education pathways, AI exposure, remote flexibility and SEKUR Opportunity Score.</p>
+          <p className="mt-6 text-lg leading-8 text-slate-400">Choose a career. You can select where you want to work on the next screen.</p>
         </div>
 
         <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.035] p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-sm font-black uppercase tracking-[.16em] text-slate-300">Refine your search</h2>
-            <button type="button" onClick={resetFilters} className="text-sm font-semibold text-blue-300 hover:text-blue-200">Reset filters</button>
-          </div>
-          <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <label className="text-xs font-bold uppercase tracking-[.12em] text-slate-400 lg:col-span-2">Search careers
+          <div className="grid gap-4 md:grid-cols-[1fr_240px]">
+            <label className="text-xs font-bold uppercase tracking-[.12em] text-slate-400">What job are you interested in?
               <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Job title or keyword" className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b1527] px-4 py-3 text-base font-normal normal-case tracking-normal text-white outline-none placeholder:text-slate-600" />
             </label>
             <label className="text-xs font-bold uppercase tracking-[.12em] text-slate-400">Career category
@@ -55,18 +51,16 @@ export default function CareersClient({ careers, initialSearch = "", initialCate
                 {categories.map((item) => <option key={item} value={item}>{item === "All" ? "All categories" : item}</option>)}
               </select>
             </label>
-            <label className="text-xs font-bold uppercase tracking-[.12em] text-slate-400">AI risk level
+          </div>
+          <details className="mt-5 border-t border-white/10 pt-4"><summary className="cursor-pointer text-sm font-bold text-slate-300">More filters</summary><div className="mt-4 grid gap-4 sm:grid-cols-2"><label className="text-xs font-bold uppercase tracking-[.12em] text-slate-400">AI risk level
               <select value={aiRisk} onChange={(event) => setAiRisk(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#0b1527] px-4 py-3 text-base font-normal normal-case tracking-normal text-white outline-none">
                 {["All", "Very Low", "Low", "Medium", "High"].map((item) => <option key={item} value={item}>{item === "All" ? "All risk levels" : item}</option>)}
               </select>
-            </label>
-          </div>
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <span className="mr-1 text-xs font-bold uppercase tracking-[.12em] text-slate-400">Remote flexibility</span>
+            </label><div><div className="text-xs font-bold uppercase tracking-[.12em] text-slate-400">Remote flexibility</div><div className="mt-2 flex flex-wrap items-center gap-2">
             {["All", "High", "Medium", "Low"].map((item) => (
               <button key={item} type="button" onClick={() => setRemote(item)} className={`rounded-full px-4 py-2 text-sm font-semibold transition ${remote === item ? "bg-emerald-300 text-slate-950" : "border border-white/10 bg-white/5 text-slate-400 hover:text-white"}`}>{item}</button>
             ))}
-          </div>
+          </div></div></div><button type="button" onClick={resetFilters} className="mt-4 text-sm font-semibold text-blue-300 hover:text-blue-200">Reset filters</button></details>
         </div>
 
         <div className="mt-8 flex items-center justify-between">

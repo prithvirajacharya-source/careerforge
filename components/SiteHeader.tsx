@@ -1,12 +1,11 @@
 import Link from "next/link";
 import CurrencySelector from "@/components/CurrencySelector";
-import VisualThemeToggle from "@/components/VisualThemeToggle";
 import UserAccountLink from "@/components/user/UserAccountLink";
 
 export default function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#07101f]/90 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-4 sm:px-6">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:px-6">
         <Link href="/" className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 via-cyan-400 to-emerald-400 font-black text-slate-950">
             S
@@ -24,34 +23,20 @@ export default function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-7 text-sm md:flex">
-          <Link
-            href="/careers"
-            className="text-slate-200 transition hover:text-white"
-          >
-            Careers
-          </Link>
-
-          <Link
-            href="/countries"
-            className="text-slate-200 transition hover:text-white"
-          >
-            Countries
-          </Link>
-
+          <Link href="/careers" className="text-slate-200 transition hover:text-white">Explore</Link>
           <Link href="/compare" className="text-slate-200 transition hover:text-white">Compare</Link>
-
-          <span className="cursor-not-allowed text-slate-600">
-            Intelligence
-          </span>
+          <Link href="/saved" className="text-slate-200 transition hover:text-white">Saved</Link>
         </nav>
 
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <VisualThemeToggle />
           <CurrencySelector />
 
           <UserAccountLink />
         </div>
       </div>
+      <nav className="mx-auto flex max-w-7xl justify-around border-t border-white/10 px-3 py-2 text-xs font-bold text-slate-300 md:hidden">
+        <Link href="/careers">Explore</Link><Link href="/compare">Compare</Link><Link href="/saved">Saved</Link><Link href="/profile">Account</Link>
+      </nav>
     </header>
   );
 }
