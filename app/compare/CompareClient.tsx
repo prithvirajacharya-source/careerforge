@@ -3,6 +3,7 @@
 import CountryFlag from "@/components/CountryFlag";
 import ComparisonMetric from "@/components/ComparisonMetric";
 import { useRouter } from "next/navigation";
+import SaveComparisonControl from "@/components/user/SaveComparisonControl";
 
 type Factor = {
   key: string;
@@ -288,6 +289,7 @@ export default function CompareClient({
             </select>
           </div>
         </div>
+        <div className="mt-4"><SaveComparisonControl left={left.slug} right={right.slug} leftName={left.name} rightName={right.name} /></div>
       </section>
 
       {/* COUNTRY CARDS */}

@@ -5,6 +5,7 @@ import MarketSalary, { SalaryComparison } from "@/components/MarketSalary";
 import ScoreCard from "@/components/ScoreCard";
 import SalaryRange from "@/components/SalaryRange";
 import SiteHeader from "@/components/SiteHeader";
+import SaveIntelligenceControl from "@/components/user/SaveIntelligenceControl";
 import { educationSummary } from "@/lib/careerModel";
 import type { CareerCountryMarket } from "@/lib/careerCountryModel";
 import { getCareerCountryProfiles } from "@/lib/careerCountryProfiles";
@@ -130,6 +131,7 @@ export default async function CareerPage({
               )}
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-400">{career.description}</p>
+            <div className="mt-5 flex flex-wrap gap-2"><SaveIntelligenceControl itemType="career" careerSlug={career.slug} label="Save career" />{selectedCountrySlug && <SaveIntelligenceControl itemType="career_market" careerSlug={career.slug} countrySlug={selectedCountrySlug} label="Save market" />}</div>
             {selectedMarketProfile && selectedMarket && (
               <CareerCountrySelector
                 careerTitle={career.title}

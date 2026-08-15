@@ -2,6 +2,7 @@
 import Link from "next/link";
 import ScoreCard from "@/components/ScoreCard";
 import SiteHeader from "@/components/SiteHeader";
+import SaveIntelligenceControl from "@/components/user/SaveIntelligenceControl";
 import { getCountryIntelligence } from "@/lib/intelligence/service";
 import { supabase } from "@/lib/supabase";
 
@@ -280,6 +281,7 @@ export default async function CountryPage({
               decision intelligence for{" "}
               {typedCountry.name}.
             </p>
+            <div className="mt-5"><SaveIntelligenceControl itemType="country" countrySlug={typedCountry.slug} label="Save country" /></div>
 
             {intelligence && (
               <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-emerald-400/15 bg-emerald-400/5 px-4 py-2 text-xs font-semibold text-emerald-300">
