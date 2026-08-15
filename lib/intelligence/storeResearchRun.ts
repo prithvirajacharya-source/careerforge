@@ -10,9 +10,7 @@ type ResearchRunConfidence =
   | "low"
   | "insufficient";
 
-type SupabaseClientLike = {
-  from: (table: string) => any;
-};
+type SupabaseClientLike = Pick<SupabaseClient, "from">;
 
 export type StoreResearchRunInput = {
   supabase: SupabaseClientLike;
@@ -405,3 +403,4 @@ function validateScore(
     );
   }
 }
+import type { SupabaseClient } from "@supabase/supabase-js";

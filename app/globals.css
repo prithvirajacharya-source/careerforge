@@ -19,6 +19,11 @@
 
 html { background: var(--background); }
 
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
+}
+
 body {
   min-height: 100vh;
   color: var(--foreground);

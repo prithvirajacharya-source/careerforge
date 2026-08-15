@@ -230,20 +230,19 @@ export default function ResearchSuggestionsPage() {
       const rawText =
         await response.text();
 
-      let result:
-        Record<
-          string,
-          any
-        > = {};
+      let result: {
+        message?: string;
+        error?: string;
+      } = {};
 
       if (
         rawText.trim()
       ) {
         try {
-          result =
-            JSON.parse(
-              rawText
-            );
+          result = JSON.parse(rawText) as {
+            message?: string;
+            error?: string;
+          };
         } catch {
           throw new Error(
             `${country.name} research returned an invalid response.`

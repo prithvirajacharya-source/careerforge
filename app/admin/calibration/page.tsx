@@ -176,7 +176,8 @@ export default function SafetyCalibrationPage() {
   }
 
   useEffect(() => {
-    loadResearchRuns();
+    const timer = window.setTimeout(() => void loadResearchRuns(), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   /*

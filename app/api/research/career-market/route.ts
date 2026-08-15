@@ -127,10 +127,15 @@ export async function GET(request: Request) {
       .eq("country_slug", countrySlug)
       .order("published_at", { ascending: false })
       .limit(20);
-    if (versionsError) throw new Error(`Could not load publication history: ${versionsError.message}`);
     const { data: sourceHealth } = await supabase.from("career_research_source_health")
       .select("*").eq("source_key", target.sourceType).maybeSingle();
-    return NextResponse.json({ target, runs: data ?? [], versions: versions ?? [], sourceHealth: sourceHealth ?? null });
+    return NextResponse.json({
+      target,
+      runs: data ?? [],
+      versions: versionsError ? [] : versions ?? [],
+      sourceHealth: sourceHealth ?? null,
+      governanceAvailable: !versionsError,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown career research error.";
     return NextResponse.json({ error: message }, { status: errorStatus(message) });
