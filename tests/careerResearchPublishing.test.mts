@@ -95,24 +95,23 @@ test("only an approved, unpublished proof-target run may publish", () => {
 });
 
 test("all seven supported Swedish research targets may publish individually", () => {
-  assert.equal(CAREER_RESEARCH_TARGETS.length, 7);
-  for (const researchTarget of CAREER_RESEARCH_TARGETS) {
+  const swedenTargets = CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "sweden");
+  assert.equal(swedenTargets.length, 7);
+  for (const researchTarget of swedenTargets) {
     const validated = validateCareerResearchPublication(runForTarget(researchTarget));
     assert.equal(validated.target.careerSlug, researchTarget.careerSlug);
     assert.equal(validated.candidate.salary.sourceCurrency, "SEK");
   }
 });
 
-test("unsupported United States and Germany markets cannot publish", () => {
-  for (const countrySlug of ["united-states", "germany"]) {
-    const unsupported = run();
-    unsupported.country_slug = countrySlug;
-    unsupported.candidate_profile.countrySlug = countrySlug;
-    assert.throws(
-      () => validateCareerResearchPublication(unsupported),
-      /only enabled Swedish career research targets/
-    );
-  }
+test("unsupported career-market mappings cannot publish", () => {
+  const unsupported = run();
+  unsupported.country_slug = "germany";
+  unsupported.candidate_profile.countrySlug = "germany";
+  assert.throws(
+    () => validateCareerResearchPublication(unsupported),
+    /only enabled career research targets/
+  );
 });
 
 test("publication rejects foreign currency, invalid ordering, and missing provenance", () => {
@@ -171,7 +170,7 @@ test("corrective migration grants only public live-profile columns", () => {
 test("v1.1 migration preserves atomic audit publishing and allowlists seven Sweden careers", () => {
   const migrationPath = fileURLToPath(new URL("../supabase/migrations/20260811_scale_career_market_publishing_sweden.sql", import.meta.url));
   const sql = readFileSync(migrationPath, "utf8");
-  for (const researchTarget of CAREER_RESEARCH_TARGETS) {
+  for (const researchTarget of CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "sweden")) {
     assert.match(sql, new RegExp(`'${researchTarget.careerSlug}'`));
   }
   assert.match(sql, /v_run\.country_slug <> 'sweden'/);

@@ -22,12 +22,14 @@ const fixture = {
   value: [51_800, 40_200, 69_900],
 };
 
-test("v1.1 selects all seven existing Swedish SCB targets", () => {
-  assert.equal(CAREER_RESEARCH_TARGETS.length, 7);
+test("registry retains all seven existing Swedish SCB targets", () => {
+  const swedenTargets = CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "sweden");
+  assert.equal(CAREER_RESEARCH_TARGETS.length, 14);
+  assert.equal(swedenTargets.length, 7);
   assert.equal(target.careerSlug, "mechanical-engineer");
   assert.equal(target.countrySlug, "sweden");
   assert.deepEqual(
-    CAREER_RESEARCH_TARGETS.map((item) => [item.careerSlug, item.countrySlug, item.occupationCode]),
+    swedenTargets.map((item) => [item.careerSlug, item.countrySlug, item.occupationCode]),
     [
       ["mechanical-engineer", "sweden", "2144"],
       ["cybersecurity-analyst", "sweden", "2516"],
@@ -43,7 +45,7 @@ test("v1.1 selects all seven existing Swedish SCB targets", () => {
 test("target selection distinguishes supported and unsupported markets", () => {
   assert.equal(getCareerResearchTarget("software-engineer", "sweden")?.nativeCurrency, "SEK");
   assert.equal(isCareerResearchSupported("registered-nurse", "sweden"), true);
-  assert.equal(isCareerResearchSupported("registered-nurse", "united-states"), false);
+  assert.equal(isCareerResearchSupported("registered-nurse", "united-states"), true);
   assert.equal(getCareerResearchTarget("mechanical-engineer", "germany"), null);
 });
 

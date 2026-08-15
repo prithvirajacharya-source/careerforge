@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { authenticateCareerResearchAdmin } from "@/lib/careerResearch/auth";
-import { getCareerResearchTarget } from "@/lib/careerResearch/registry";
+import {
+  CAREER_RESEARCH_TARGETS,
+  getCareerResearchTarget,
+  type CareerResearchTarget,
+} from "@/lib/careerResearch/registry";
+import { planBulkCareerResearch } from "@/lib/careerResearch/freshness";
 import { collectCareerResearch } from "@/lib/careerResearch/runner";
 import { getCareerCountryProfile } from "@/lib/careerCountryProfiles";
 import {
@@ -13,7 +19,7 @@ import {
   type PublishableResearchRun,
 } from "@/lib/careerResearch/publishing";
 
-type ResearchRequest = { careerSlug?: string; countrySlug?: string };
+type ResearchRequest = { careerSlug?: string; countrySlug?: string; bulk?: boolean; force?: boolean };
 type ReviewRequest = {
   runId?: number;
   decision?: CareerResearchDecision;
@@ -25,6 +31,35 @@ function errorStatus(message: string) {
   if (message.includes("admin access")) return 403;
   if (message.includes("already been reviewed")) return 409;
   return 400;
+}
+
+async function collectAndStoreResearch(
+  target: CareerResearchTarget,
+  supabase: SupabaseClient,
+  userId: string
+) {
+  const candidate = await collectCareerResearch(target);
+  const liveProfile = getCareerCountryProfile(target.careerSlug, target.countrySlug);
+  if (!liveProfile) throw new Error("The live career-market profile does not exist.");
+
+  const { data, error } = await supabase
+    .from("career_research_runs")
+    .insert({
+      career_slug: target.careerSlug,
+      country_slug: target.countrySlug,
+      status: "pending_review",
+      schema_version: candidate.schemaVersion,
+      candidate_profile: candidate,
+      live_profile_snapshot: liveProfile,
+      source_name: candidate.salary.typical.provenance?.sourceName ?? null,
+      source_url: candidate.salary.typical.provenance?.sourceUrl ?? null,
+      researched_at: candidate.researchedAt,
+      created_by: userId,
+    })
+    .select()
+    .single();
+  if (error) throw new Error(`Could not store career research run: ${error.message}`);
+  return { run: data, candidate, liveProfile };
 }
 
 export async function GET(request: Request) {
@@ -59,6 +94,41 @@ export async function POST(request: Request) {
   try {
     const { supabase, user } = await authenticateCareerResearchAdmin(request);
     const body = (await request.json().catch(() => ({}))) as ResearchRequest;
+
+    if (body.bulk) {
+      const { data: recentRuns, error: historyError } = await supabase
+        .from("career_research_runs")
+        .select("career_slug,country_slug,researched_at")
+        .order("researched_at", { ascending: false })
+        .limit(200);
+      if (historyError) throw new Error(`Could not plan bulk research: ${historyError.message}`);
+
+      const latest = new Map<string, string>();
+      for (const run of recentRuns ?? []) {
+        const key = `${run.career_slug}:${run.country_slug}`;
+        if (!latest.has(key) && run.researched_at) latest.set(key, run.researched_at);
+      }
+      const plan = planBulkCareerResearch(CAREER_RESEARCH_TARGETS, latest);
+      const results: Array<Record<string, unknown>> = [];
+      for (const item of plan) {
+        if (!body.force && !item.shouldRun) {
+          results.push({ careerSlug: item.target.careerSlug, countrySlug: item.target.countrySlug, status: "skipped_fresh", researchedAt: item.researchedAt });
+          continue;
+        }
+        try {
+          const result = await collectAndStoreResearch(item.target, supabase, user.id);
+          results.push({ careerSlug: item.target.careerSlug, countrySlug: item.target.countrySlug, status: "pending_review", runId: result.run.id });
+        } catch (error) {
+          results.push({ careerSlug: item.target.careerSlug, countrySlug: item.target.countrySlug, status: "failed", error: error instanceof Error ? error.message : "Unknown collector failure" });
+        }
+      }
+      return NextResponse.json({
+        message: "Bulk research completed. Successful candidates are pending review; nothing was published.",
+        results,
+        safeguards: { liveDataChanged: false, published: false, sequential: true },
+      });
+    }
+
     const careerSlug = body.careerSlug ?? "";
     const countrySlug = body.countrySlug ?? "";
     const target = getCareerResearchTarget(careerSlug, countrySlug);
@@ -67,28 +137,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Career-market research target is not enabled." }, { status: 404 });
     }
 
-    const candidate = await collectCareerResearch(target);
-    const liveProfile = getCareerCountryProfile(careerSlug, countrySlug);
-    if (!liveProfile) throw new Error("The live career-market profile does not exist.");
-
-    const { data, error } = await supabase
-      .from("career_research_runs")
-      .insert({
-        career_slug: careerSlug,
-        country_slug: countrySlug,
-        status: "pending_review",
-        schema_version: candidate.schemaVersion,
-        candidate_profile: candidate,
-        live_profile_snapshot: liveProfile,
-        source_name: candidate.salary.typical.provenance?.sourceName ?? null,
-        source_url: candidate.salary.typical.provenance?.sourceUrl ?? null,
-        researched_at: candidate.researchedAt,
-        created_by: user.id,
-      })
-      .select()
-      .single();
-
-    if (error) throw new Error(`Could not store career research run: ${error.message}`);
+    const { run: data, candidate, liveProfile } = await collectAndStoreResearch(target, supabase, user.id);
 
     return NextResponse.json({
       message: "Research completed and stored for review. Live verified data was not changed.",
