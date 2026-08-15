@@ -13,7 +13,7 @@ export default function CurrencySelector() {
         onChange={(event) => setCurrency(event.target.value)}
         disabled={loading && currencies.length <= 1}
         title="Display currency"
-        className="h-10 w-28 min-w-0 rounded-xl border border-white/10 bg-white/5 px-3 pr-8 text-sm font-bold text-slate-200 outline-none transition hover:bg-white/10 focus:border-blue-400/40 sm:w-48 lg:w-auto"
+        className="h-9 w-20 min-w-0 rounded-lg border border-white/[0.07] bg-transparent px-2 pr-6 text-xs font-semibold text-slate-400 outline-none transition hover:border-white/15 hover:text-slate-200 focus:border-blue-400/30"
       >
         {currencies.map((item) => (
           <option key={item.code} value={item.code} className="bg-[#0b1527] text-white">

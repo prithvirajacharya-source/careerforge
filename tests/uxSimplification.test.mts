@@ -17,6 +17,8 @@ test("homepage centers career and country selection on one action", () => {
   assert.match(search, /What job are you interested in/);
   assert.match(search, /Where do you want to work/);
   assert.match(search, /Show opportunities/);
+  assert.match(search, /disabled={!career \|\| !country}/);
+  assert.match(home, /Browse all careers →/);
   assert.doesNotMatch(search, /AI risk level|Experience level|Apply filters/);
 });
 
