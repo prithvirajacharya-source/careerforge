@@ -1,0 +1,6 @@
+import { NextResponse } from "next/server";
+import { getBillingConfig } from "@/lib/billing/config";
+import { createPortalSession, isStripeHostedUrl } from "@/lib/billing/stripe";
+import { authenticateRequest } from "@/lib/supabaseServer";
+
+export async function POST(request: Request) { const auth = await authenticateRequest(request); if (!auth) return NextResponse.json({ error: "Sign in to manage billing." }, { status: 401 }); const config = getBillingConfig(); if (!config.configured) return NextResponse.json({ error: "Billing is not configured for this environment." }, { status: 503 }); const { data, error } = await auth.client.from("user_subscriptions").select("stripe_customer_id").eq("user_id", auth.user.id).maybeSingle(); if (error) return NextResponse.json({ error: "Billing state could not be verified." }, { status: 503 }); if (!data?.stripe_customer_id) return NextResponse.json({ error: "No billing account is linked to this user." }, { status: 404 }); try { const session = await createPortalSession(config, data.stripe_customer_id); if (!isStripeHostedUrl(session.url)) throw new Error("Stripe did not return a trusted portal URL."); return NextResponse.json({ url: session.url }); } catch { return NextResponse.json({ error: "Billing management could not be opened." }, { status: 502 }); } }

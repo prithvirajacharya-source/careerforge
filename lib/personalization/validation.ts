@@ -14,7 +14,7 @@ export function validateUserCareerProfile(profile: UserCareerProfile) {
   if (profile.desiredSalary !== null && !/^[A-Z]{3}$/.test(profile.desiredSalaryCurrency ?? "")) {
     throw new Error("Desired salary requires a valid three-letter currency.");
   }
-  if (profile.skills.length > 100 || profile.targetCountries.length > 25) {
+  if (profile.skills.length > 100 || profile.targetCountries.length > 25 || (profile.languages?.length ?? 0) > 20) {
     throw new Error("Profile list limits were exceeded.");
   }
   if ((profile.careerGoals?.length ?? 0) > 2000) throw new Error("Career goals must be 2,000 characters or fewer.");

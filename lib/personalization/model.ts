@@ -10,6 +10,10 @@ export type UserCareerProfile = {
   remotePreference: "required" | "preferred" | "neutral";
   relocationWillingness: "yes" | "maybe" | "no";
   careerGoals: string | null;
+  languages?: string[];
+  educationField?: string | null;
+  citizenshipRegion?: string | null;
+  workAuthorizationStatus?: "authorized" | "requires-permit" | "unknown";
 };
 
 export type SavedCareerMarket = {

@@ -7,7 +7,7 @@ import { ALERT_TYPES, type AlertType, validateAlertPreferences } from "@/lib/per
 import { resolveEntitlements } from "@/lib/personalization/entitlements";
 import { trackMonetizationEvent } from "@/lib/personalization/analytics";
 
-const labels: Record<AlertType, string> = { salary_updated: "Salary updates", new_verified_data: "New verified evidence", hiring_outlook_updated: "Hiring/outlook updates", source_freshness_changed: "Source freshness changes", career_score_changed: "Career score changes" };
+const labels: Record<AlertType, string> = { salary_updated: "Salary updates", new_verified_data: "New verified evidence", hiring_outlook_updated: "Hiring/outlook updates", source_freshness_changed: "Source freshness changes", career_score_changed: "Career score changes", opportunity_score_changed: "Major Opportunity Score changes", new_high_match_jobs: "New high-match jobs", relocation_rule_changed: "Relocation-rule changes" };
 
 export default function AlertPreferencesControl({ careerSlug, countrySlug }: { careerSlug: string; countrySlug: string }) {
   const [userId, setUserId] = useState<string | null>(null);

@@ -1,4 +1,4 @@
-export const SEKUR_SCORE_VERSION = "1.0" as const;
+export const SEKUR_SCORE_VERSION = "1.1" as const;
 
 export type SekurScoreKey = "careerFit" | "countryFit" | "jobMarketDemand" | "salaryPotential" | "costOfLivingEfficiency" | "visaRelocationFeasibility" | "safety" | "skillsMatch" | "experienceMatch" | "educationMatch" | "languageFit" | "longTermGrowth";
 export type SekurConfidence = "high" | "medium" | "low" | "insufficient";

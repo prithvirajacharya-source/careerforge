@@ -9,7 +9,7 @@ const sections = [
   ["Source and currency limitations", "SEKUR preserves source provenance and local-market evidence. Display-currency conversion does not turn one country's evidence into another country's labour-market data and does not change hourly, monthly, or annual salary periods."],
   ["Accounts", "You are responsible for safeguarding your sign-in credentials and for the accuracy of information you add. Do not attempt to access another user's records or administrative functions."],
   ["Research governance", "Unreviewed research candidates are not public evidence. Approval and publication are separate administrative actions, and unsupported-market evidence must not be inferred or published."],
-  ["Pro and alerts", "Pro capability gates may be evaluated during beta. Pricing, checkout, and payment processing are not available. Alert preferences can be saved, but notifications are not currently delivered."],
+  ["Pro, billing, and alerts", "Pro checkout and subscription management are available only when the payment provider is configured. Payments are processed by the provider; SEKUR does not store raw card details. Alert preferences can be saved, but notifications are not currently delivered."],
   ["Public-launch requirement", "These private-beta terms are an operational placeholder. The final operating entity, jurisdiction, support contact, liability terms, acceptable-use rules, and dispute terms require legal review before public launch."],
 ] as const;
 

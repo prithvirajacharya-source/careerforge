@@ -1,4 +1,4 @@
-export const ALERT_TYPES = ["salary_updated", "new_verified_data", "hiring_outlook_updated", "source_freshness_changed", "career_score_changed"] as const;
+export const ALERT_TYPES = ["salary_updated", "new_verified_data", "hiring_outlook_updated", "source_freshness_changed", "career_score_changed", "opportunity_score_changed", "new_high_match_jobs", "relocation_rule_changed"] as const;
 export type AlertType = typeof ALERT_TYPES[number];
 
 export function validateAlertPreferences(types: readonly string[]) {

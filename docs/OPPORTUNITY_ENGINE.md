@@ -2,9 +2,11 @@
 
 The engine ranks bounded country-and-career combinations using only available SEKUR evidence. It is deterministic and does not predict employment or immigration outcomes.
 
-## Unified score version 1.0
+## Unified score version 1.1
 
-`lib/scoring` is the reusable scoring kernel for reports, comparisons and future recomputation. Every component carries evidence text and optional provenance independently from its normalized value. Results include `scoreVersion: "1.0"`, weighted evidence coverage and confidence so stored private report snapshots can be reproduced or intentionally recomputed after a methodology change without a schema migration.
+`lib/scoring` is the reusable scoring kernel for reports, comparisons and future recomputation. Every component carries evidence text and optional provenance independently from its normalized value. Results include `scoreVersion: "1.1"`, weighted evidence coverage and confidence so stored private report snapshots can be reproduced or intentionally recomputed after a methodology change without a schema migration.
+
+Version 1.1 preserves the v1.0 weights and missing-evidence rules. It adds published, provenance-bearing language and work-authorization evidence to their existing dimensions when available. Without that evidence, those components remain unavailable and v1.0 behavior is preserved.
 
 ## Candidate generation
 
@@ -14,7 +16,7 @@ The pool starts with the selected/current career and up to five adjacent careers
 
 Career fit 16%, country fit 8%, job-market demand 12%, salary potential 10%, cost-of-living efficiency 8%, visa/relocation feasibility 8%, Safety 8%, skills match 12%, experience match 6%, education match 6%, language fit 3%, long-term growth 3%.
 
-Unavailable evidence remains `null`. Unsupported live-job coverage is not treated as zero. Salary potential is calculated only for a verified annual salary and a same-currency user goal. Country factors come only from current published intelligence rows. Experience, education and language scores remain unavailable until comparable requirements exist; the engine never infers them from a title.
+Unavailable evidence remains `null`. Unsupported live-job coverage is not treated as zero. Salary potential is calculated only for a verified annual salary and a same-currency user goal. Country factors come only from current published intelligence rows. Experience, education and language scores remain unavailable until comparable requirements exist; the engine never infers them from a title. Job-level requirements may be extracted only from an actual posting description.
 
 ## Missing data, coverage and confidence
 
