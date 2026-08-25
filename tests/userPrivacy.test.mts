@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const sql = readFileSync(new URL("../supabase/migrations/20260815_create_user_career_intelligence.sql", import.meta.url), "utf8");
+const sql = readFileSync(new URL("../supabase/migrations/20260815090200_create_user_career_intelligence.sql", import.meta.url), "utf8");
 
 test("personalization tables enforce per-user RLS and deny anonymous access", () => {
   assert.match(sql, /enable row level security/g);

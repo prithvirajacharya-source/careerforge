@@ -1,0 +1,2 @@
+export type StudyResource = { id: string; title: string; provider: string; description: string; url: string; resourceType: "course" | "tutorial" | "documentation" | "practice" | "certification"; pricing: "free" | "paid" | "freemium" | "unknown"; level: string; durationText: string | null; language: string; skills: string[]; careerSlugs: string[]; verifiedAt: string; affiliateUrl?: string; sponsored: boolean; notes?: string };
+export type StudyRecommendation = { resource: StudyResource; matchedSkills: string[]; reason: string };

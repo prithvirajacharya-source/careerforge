@@ -8,7 +8,7 @@ import {
   resolveCareerCountryProfile,
   type PublishedCareerMarketProfile,
 } from "../lib/careerMarketProfiles.ts";
-import { validateCareerResearchPublication } from "../lib/careerResearch/publishing.ts";
+import { isCareerResearchPublishingSupported, validateCareerResearchPublication } from "../lib/careerResearch/publishing.ts";
 import { CAREER_RESEARCH_TARGETS, getCareerResearchTarget } from "../lib/careerResearch/registry.ts";
 import { normalizeScbSalaryResponse } from "../lib/careerResearch/scb.ts";
 
@@ -95,7 +95,7 @@ test("only an approved, unpublished proof-target run may publish", () => {
 });
 
 test("all seven supported Swedish research targets may publish individually", () => {
-  const swedenTargets = CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "sweden");
+  const swedenTargets = CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "sweden" && isCareerResearchPublishingSupported(item.careerSlug, item.countrySlug));
   assert.equal(swedenTargets.length, 7);
   for (const researchTarget of swedenTargets) {
     const validated = validateCareerResearchPublication(runForTarget(researchTarget));
@@ -146,7 +146,7 @@ test("a resolver failure leaves unrelated TypeScript profiles unchanged", async 
 });
 
 test("migration performs version insert, live upsert and run audit in one security-definer RPC", () => {
-  const migrationPath = fileURLToPath(new URL("../supabase/migrations/20260810_create_career_market_publishing.sql", import.meta.url));
+  const migrationPath = fileURLToPath(new URL("../supabase/migrations/20260810090100_create_career_market_publishing.sql", import.meta.url));
   const sql = readFileSync(migrationPath, "utf8");
   assert.match(sql, /security definer/i);
   assert.match(sql, /insert into public\.career_market_profile_versions/i);
@@ -157,7 +157,7 @@ test("migration performs version insert, live upsert and run audit in one securi
 });
 
 test("corrective migration grants only public live-profile columns", () => {
-  const migrationPath = fileURLToPath(new URL("../supabase/migrations/20260810_grant_public_career_market_profile_read.sql", import.meta.url));
+  const migrationPath = fileURLToPath(new URL("../supabase/migrations/20260810090300_grant_public_career_market_profile_read.sql", import.meta.url));
   const sql = readFileSync(migrationPath, "utf8");
   assert.match(sql, /revoke all privileges on table public\.career_market_profiles from anon, authenticated/i);
   assert.match(sql, /grant select \([\s\S]*career_slug[\s\S]*notes[\s\S]*\) on table public\.career_market_profiles to anon, authenticated/i);
@@ -168,9 +168,9 @@ test("corrective migration grants only public live-profile columns", () => {
 });
 
 test("v1.1 migration preserves atomic audit publishing and allowlists seven Sweden careers", () => {
-  const migrationPath = fileURLToPath(new URL("../supabase/migrations/20260811_scale_career_market_publishing_sweden.sql", import.meta.url));
+  const migrationPath = fileURLToPath(new URL("../supabase/migrations/20260811090000_scale_career_market_publishing_sweden.sql", import.meta.url));
   const sql = readFileSync(migrationPath, "utf8");
-  for (const researchTarget of CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "sweden")) {
+  for (const researchTarget of CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "sweden" && isCareerResearchPublishingSupported(item.careerSlug, item.countrySlug))) {
     assert.match(sql, new RegExp(`'${researchTarget.careerSlug}'`));
   }
   assert.match(sql, /v_run\.country_slug <> 'sweden'/);

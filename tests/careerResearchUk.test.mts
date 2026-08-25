@@ -49,7 +49,8 @@ test("XLSX parsing fails closed on a changed sheet or malformed workbook", () =>
 
 test("all defensible UK mappings normalize annual GBP evidence with provenance", () => {
   const workbook = makeWorkbook();
-  const targets = CAREER_RESEARCH_TARGETS.filter((target) => target.countrySlug === "united-kingdom");
+  const proofCodes = new Set(proofRows.map((row) => row.code));
+  const targets = CAREER_RESEARCH_TARGETS.filter((target) => target.countrySlug === "united-kingdom" && proofCodes.has(target.occupationCode));
   assert.equal(targets.length, 6);
   for (const target of targets) {
     const expected = proofRows.find((row) => row.code === target.occupationCode)!;

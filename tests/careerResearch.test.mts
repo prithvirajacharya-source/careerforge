@@ -23,9 +23,10 @@ const fixture = {
 };
 
 test("registry retains all seven existing Swedish SCB targets", () => {
-  const swedenTargets = CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "sweden");
-  assert.equal(CAREER_RESEARCH_TARGETS.length, 42);
-  assert.equal(swedenTargets.length, 7);
+  const originalSlugs = new Set(["mechanical-engineer", "cybersecurity-analyst", "software-engineer", "electrical-engineer", "data-scientist", "registered-nurse", "accountant"]);
+  const swedenTargets = CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "sweden" && originalSlugs.has(item.careerSlug));
+  assert.equal(CAREER_RESEARCH_TARGETS.length, 178);
+  assert.equal(CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "sweden").length, 26);
   assert.equal(target.careerSlug, "mechanical-engineer");
   assert.equal(target.countrySlug, "sweden");
   assert.deepEqual(

@@ -18,7 +18,7 @@ test("opportunity ranking exposes coverage and avoids false precision", () => {
 });
 
 test("personalization migration keeps user intelligence private and pricing configurable", () => {
-  const sql = readFileSync(new URL("../supabase/migrations/20260815_create_user_career_intelligence.sql", import.meta.url), "utf8");
+  const sql = readFileSync(new URL("../supabase/migrations/20260815090200_create_user_career_intelligence.sql", import.meta.url), "utf8");
   assert.match(sql, /user_id = auth\.uid\(\)/);
   assert.match(sql, /enable row level security/g);
   assert.match(sql, /revoke all privileges[\s\S]*from public, anon/);

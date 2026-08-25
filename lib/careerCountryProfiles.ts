@@ -498,3 +498,7 @@ export function getCareerCountryProfile(careerSlug: string, countrySlug: string)
 export function getCareerCountryProfiles(careerSlug: string) {
   return profiles.filter((profile) => profile.careerSlug === careerSlug);
 }
+
+export function getCountryCareerProfiles(countrySlug: string) {
+  return profiles.filter((profile) => profile.countrySlug === countrySlug);
+}

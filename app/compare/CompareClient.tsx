@@ -4,6 +4,7 @@ import CountryFlag from "@/components/CountryFlag";
 import ComparisonMetric from "@/components/ComparisonMetric";
 import { useRouter } from "next/navigation";
 import SaveComparisonControl from "@/components/user/SaveComparisonControl";
+import { compareScoreRecords } from "@/lib/scoring/comparison";
 
 type Factor = {
   key: string;
@@ -169,48 +170,12 @@ export default function CompareClient({
       leftScore - rightScore
     );
 
-  const leftAdvantages: string[] =
-    [];
-
-  const rightAdvantages: string[] =
-    [];
-
-  for (const metric of metrics) {
-    const leftFactor =
-      getFactor(
-        left,
-        metric.key
-      );
-
-    const rightFactor =
-      getFactor(
-        right,
-        metric.key
-      );
-
-    if (
-      !leftFactor ||
-      !rightFactor
-    ) {
-      continue;
-    }
-
-    const difference =
-      leftFactor.score -
-      rightFactor.score;
-
-    if (difference >= 3) {
-      leftAdvantages.push(
-        metric.label
-      );
-    }
-
-    if (difference <= -3) {
-      rightAdvantages.push(
-        metric.label
-      );
-    }
-  }
+  const outcomes = compareScoreRecords(
+    metrics.map((metric) => ({ key: metric.key, label: metric.label, score: getFactor(left, metric.key)?.score ?? null })),
+    metrics.map((metric) => ({ key: metric.key, label: metric.label, score: getFactor(right, metric.key)?.score ?? null }))
+  );
+  const leftAdvantages = outcomes.filter((outcome) => outcome.winner === "left").map((outcome) => outcome.label);
+  const rightAdvantages = outcomes.filter((outcome) => outcome.winner === "right").map((outcome) => outcome.label);
 
   return (
     <>
@@ -529,41 +494,8 @@ export default function CompareClient({
           </div>
         </div>
 
-        <div className="border-t border-white/10 bg-blue-400/[0.03] p-8">
-          <div className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">
-            The real question
-          </div>
-
-          <h3 className="mt-3 text-2xl font-black">
-            Which country is better
-            for you?
-          </h3>
-
-          <p className="mt-3 max-w-2xl leading-7 text-slate-400">
-            SEKUR&apos;s global score
-            compares the markets.
-            Personal Intelligence will
-            adjust these weights based
-            on your career, family,
-            financial goals and
-            priorities.
-          </p>
-
-          <button
-            disabled
-            className="mt-6 cursor-not-allowed rounded-xl bg-white px-6 py-3 font-bold text-slate-950 opacity-90"
-          >
-            Personal assessment
-            coming soon
-          </button>
-        </div>
       </section>
 
-      <div className="mt-6 text-center text-xs text-slate-600">
-        Prototype intelligence data ·
-        Verified source integration in
-        progress
-      </div>
     </>
   );
 }

@@ -17,14 +17,22 @@ export type IntelligenceSuggestion = {
   reasoning: string | null;
   status: "pending" | "approved" | "rejected";
   created_at: string;
+  coverage_percent: number | null;
+  confidence: string | null;
+  methodology_version: string | null;
+  benchmark_version: string | null;
+  publishable: boolean;
 };
 
 type Props = {
   suggestions: IntelligenceSuggestion[];
+  onSuggestionResolved?: () =>
+    Promise<void>;
 };
 
 export default function ResearchSuggestions({
   suggestions,
+  onSuggestionResolved,
 }: Props) {
   const router = useRouter();
 
@@ -46,87 +54,59 @@ export default function ResearchSuggestions({
 
     try {
       const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+        data: {
+          session,
+        },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-      if (userError || !user) {
+      if (
+        sessionError ||
+        !session?.access_token
+      ) {
         throw new Error(
           "You must be signed in as an administrator."
         );
       }
 
-      /*
-        1. Publish the proposed score and source
-        to the live intelligence table.
-      */
-      const { error: publishError } =
-        await supabase
-          .from(
-            "country_intelligence_factors"
-          )
-          .update({
-            score:
-              suggestion.suggested_score,
+      const response =
+        await fetch(
+          `/api/admin/intelligence-suggestions/${suggestion.id}/approve`,
+          {
+            method: "POST",
+            headers: {
+              Authorization:
+                `Bearer ${session.access_token}`,
+            },
+          }
+        );
 
-            source_type:
-              suggestion.source_type,
-
-            source_name:
-              suggestion.source_name,
-
-            source_url:
-              suggestion.source_url,
-
-            explanation:
-              suggestion.reasoning ??
-              suggestion.evidence ??
-              null,
-
-            verified_at:
-              new Date().toISOString(),
-
-            updated_at:
-              new Date().toISOString(),
+      const result =
+        await response.json().catch(
+          () => ({
+            error:
+              "The approval service returned an invalid response.",
           })
-          .eq(
-            "country_slug",
-            suggestion.country_slug
-          )
-          .eq(
-            "factor_key",
-            suggestion.factor_key
-          );
+        );
 
-      if (publishError) {
-        throw publishError;
-      }
-
-      /*
-        2. Mark the proposal as approved.
-      */
-      const { error: suggestionError } =
-        await supabase
-          .from(
-            "intelligence_suggestions"
-          )
-          .update({
-            status: "approved",
-            reviewed_by: user.id,
-            reviewed_at:
-              new Date().toISOString(),
-          })
-          .eq("id", suggestion.id);
-
-      if (suggestionError) {
-        throw suggestionError;
+      if (!response.ok) {
+        throw new Error(
+          typeof result?.error ===
+            "string"
+            ? result.error
+            : "Could not approve suggestion."
+        );
       }
 
       setMessage(
         `${suggestion.country_slug} / ${suggestion.factor_key} published successfully.`
       );
 
-      router.refresh();
+      if (onSuggestionResolved) {
+        await onSuggestionResolved();
+      } else {
+        router.refresh();
+      }
     } catch (error) {
       console.error(
         "Approval failed:",
@@ -183,7 +163,11 @@ export default function ResearchSuggestions({
         "Suggestion rejected."
       );
 
-      router.refresh();
+      if (onSuggestionResolved) {
+        await onSuggestionResolved();
+      } else {
+        router.refresh();
+      }
     } catch (error) {
       console.error(
         "Rejection failed:",
@@ -245,6 +229,20 @@ export default function ResearchSuggestions({
                 ? suggestion.suggested_score -
                   suggestion.current_score
                 : null;
+
+            const publishable =
+              suggestion.publishable ===
+                true &&
+              suggestion.coverage_percent !==
+                null &&
+              suggestion.coverage_percent >=
+                70 &&
+              (
+                suggestion.confidence ===
+                  "high" ||
+                suggestion.confidence ===
+                  "very-high"
+              );
 
             return (
               <article
@@ -394,6 +392,74 @@ export default function ResearchSuggestions({
                   )}
                 </div>
 
+                {/* PUBLICATION QUALITY */}
+                <div className="border-t border-white/10 px-7 py-5">
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                    <div>
+                      <div className="text-xs text-slate-600">
+                        Coverage
+                      </div>
+                      <div className="mt-1 font-semibold">
+                        {suggestion.coverage_percent !==
+                        null
+                          ? `${suggestion.coverage_percent}%`
+                          : "Not provided"}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-slate-600">
+                        Confidence
+                      </div>
+                      <div className="mt-1 font-semibold capitalize">
+                        {suggestion.confidence ??
+                          "Not provided"}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-slate-600">
+                        Methodology
+                      </div>
+                      <div className="mt-1 font-semibold">
+                        {suggestion.methodology_version ??
+                          "Not provided"}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-slate-600">
+                        Benchmark
+                      </div>
+                      <div className="mt-1 font-semibold">
+                        {suggestion.benchmark_version ??
+                          "Not provided"}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-slate-600">
+                        Publishability
+                      </div>
+                      <div className={`mt-1 font-semibold ${
+                        publishable
+                          ? "text-emerald-300"
+                          : "text-amber-300"
+                      }`}>
+                        {publishable
+                          ? "Eligible"
+                          : "Research only"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {!publishable && (
+                    <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-200">
+                      Research only — insufficient evidence for live publication
+                    </div>
+                  )}
+                </div>
+
                 {/* ACTIONS */}
                 <div className="flex flex-col justify-between gap-4 border-t border-white/10 p-7 sm:flex-row sm:items-center">
                   <div className="text-sm text-slate-500">
@@ -424,7 +490,8 @@ export default function ResearchSuggestions({
                       type="button"
                       disabled={
                         workingId ===
-                        suggestion.id
+                          suggestion.id ||
+                        !publishable
                       }
                       onClick={() =>
                         approveSuggestion(

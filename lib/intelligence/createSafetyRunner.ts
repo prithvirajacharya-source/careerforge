@@ -376,12 +376,23 @@ export function createSafetyRunner(
           research.metrics
         );
 
-      const publishable =
+      const hasResearchScore =
         safetyResult.score !==
         null;
 
+      const publishable =
+        hasResearchScore &&
+        safetyResult.coverage
+          .coveragePercent >= 70 &&
+        (
+          safetyResult.confidence ===
+            "high" ||
+          safetyResult.confidence ===
+            "very-high"
+        );
+
       const status =
-        publishable
+        hasResearchScore
           ? "completed"
           : "insufficient";
 
@@ -464,8 +475,7 @@ export function createSafetyRunner(
       */
 
       if (
-        safetyResult.score ===
-        null
+        !publishable
       ) {
         return NextResponse.json(
           {
@@ -476,7 +486,9 @@ export function createSafetyRunner(
               false,
 
             message:
-              `${config.countryName} Safety research completed. SEKUR found ${safetyResult.coverage.coveragePercent}% comparable evidence coverage, so no score suggestion was created.`,
+              hasResearchScore
+                ? `${config.countryName} Safety research completed. SEKUR calculated ${safetyResult.score}/100 with ${safetyResult.coverage.coveragePercent}% comparable evidence coverage, but the result is not publishable and no score suggestion was created.`
+                : `${config.countryName} Safety research completed. SEKUR found ${safetyResult.coverage.coveragePercent}% comparable evidence coverage, so no score suggestion was created.`,
 
             baseline_created:
               !existingFactor,
@@ -485,7 +497,13 @@ export function createSafetyRunner(
               researchRun.id,
 
             methodology:
-              SAFETY_METHODOLOGY_VERSION,
+              safetyResult.methodologyVersion,
+
+            methodology_version:
+              safetyResult.methodologyVersion,
+
+            benchmark_version:
+              safetyResult.benchmarkVersion,
 
             current_score:
               factor.score,
@@ -646,6 +664,22 @@ export function createSafetyRunner(
 
             created_by:
               user.id,
+
+            coverage_percent:
+              safetyResult.coverage
+                .coveragePercent,
+
+            confidence:
+              safetyResult.confidence,
+
+            methodology_version:
+              safetyResult.methodologyVersion,
+
+            benchmark_version:
+              safetyResult.benchmarkVersion,
+
+            publishable:
+              publishable,
           })
           .select()
           .single();
@@ -682,7 +716,13 @@ export function createSafetyRunner(
             researchRun.id,
 
           methodology:
-            SAFETY_METHODOLOGY_VERSION,
+            safetyResult.methodologyVersion,
+
+          methodology_version:
+            safetyResult.methodologyVersion,
+
+          benchmark_version:
+            safetyResult.benchmarkVersion,
 
           current_score:
             factor.score,

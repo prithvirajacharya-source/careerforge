@@ -9,6 +9,7 @@ import {
 } from "@/lib/careerResearch/registry";
 import type { CareerResearchCandidate } from "@/lib/careerResearch/model";
 import { getCareerResearchCountrySource } from "@/lib/careerResearch/countryRegistry";
+import { isCareerResearchPublishingSupported } from "@/lib/careerResearch/publishing";
 
 type ResearchRun = {
   id: number;
@@ -219,7 +220,7 @@ export default function CareerResearchConsole() {
   const candidate = selected?.candidate_profile;
   const liveSalary = selected?.live_profile_snapshot?.salary;
   const publishingSupported = Boolean(
-    candidate && getCareerResearchTarget(candidate.careerSlug, candidate.countrySlug)?.enabled
+    candidate && getCareerResearchTarget(candidate.careerSlug, candidate.countrySlug)?.enabled && isCareerResearchPublishingSupported(candidate.careerSlug, candidate.countrySlug)
   );
 
   return (

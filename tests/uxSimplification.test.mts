@@ -6,8 +6,8 @@ const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf
 
 test("public navigation presents one small, plain-language information architecture", () => {
   const header = read("../components/SiteHeader.tsx");
-  for (const destination of ["Explore", "Compare", "Saved", "Account"]) assert.match(header, new RegExp(destination));
-  assert.doesNotMatch(header, />Careers<|>Countries<|>Intelligence</);
+  for (const destination of ["Careers", "Countries", "Saved", "Account"]) assert.match(header, new RegExp(destination));
+  assert.doesNotMatch(header, />Compare<|>Pro<|>Intelligence</);
 });
 
 test("homepage centers career and country selection on one action", () => {
@@ -38,4 +38,32 @@ test("profile, saved, and Pro describe user outcomes instead of internal structu
   const pro = read("../app/pro/page.tsx");
   assert.match(pro, /Move from information to a decision/);
   assert.doesNotMatch(pro, /capabilit|entitlement/i);
+});
+
+test("opportunity summary separates typical salary from the low-high range", () => {
+  const salary = read("../components/MarketSalary.tsx");
+  const page = read("../app/careers/[slug]/page.tsx");
+  assert.match(salary, /return <MarketSalaryValue amount={salary\.typical}/);
+  assert.match(salary, /amount={salary\.low}/);
+  assert.match(salary, /amount={salary\.high}/);
+  assert.match(page, />Salary range</);
+  assert.match(page, /Currently unavailable/);
+  assert.doesNotMatch(page, /Not published/);
+});
+
+test("signed-out saving preserves a safe return path and explains the next step", () => {
+  const save = read("../components/user/SaveIntelligenceControl.tsx");
+  const session = read("../components/user/UserSessionGate.tsx");
+  assert.match(save, />Sign in to save</);
+  assert.match(save, /returnTo=/);
+  assert.match(save, /Signed in\. Select \$\{label\} to finish/);
+  assert.match(session, /returnTo\.startsWith\("\/"\)/);
+  assert.match(session, /!returnTo\.startsWith\("\/\/"\)/);
+  assert.match(session, /router\.replace\(returnTo\)/);
+});
+
+test("Compare uses customer language and hides unfinished concepts", () => {
+  const page = `${read("../app/compare/page.tsx")}\n${read("../app/compare/CompareClient.tsx")}`;
+  assert.match(page, /Compare career opportunities/);
+  for (const phrase of ["live SEKUR Intelligence Engine", "Personal Intelligence", "Personal assessment coming soon", "Prototype intelligence data"]) assert.doesNotMatch(page, new RegExp(phrase, "i"));
 });

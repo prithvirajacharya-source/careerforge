@@ -50,9 +50,10 @@ function responseFor(researchTarget: typeof target) {
 }
 
 test("all seven United States targets have explicit defensible BLS SOC mappings", () => {
-  const usTargets = CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "united-states");
-  assert.equal(usTargets.length, 7);
-  assert.equal(CAREER_RESEARCH_CAREERS.length, 7);
+  const originalSlugs = new Set<string>(expectedMappings.map(([slug]) => slug));
+  const usTargets = CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "united-states" && originalSlugs.has(item.careerSlug));
+  assert.equal(CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "united-states").length, 27);
+  assert.equal(CAREER_RESEARCH_CAREERS.length, 27);
   assert.deepEqual(
     usTargets.map((item) => [item.careerSlug, item.occupationCode]),
     expectedMappings
@@ -131,7 +132,7 @@ test("approved United States evidence may publish but pending evidence may not",
 });
 
 test("United States publishing migration keeps atomic audit and native-market guards", () => {
-  const migrationPath = fileURLToPath(new URL("../supabase/migrations/20260812_enable_us_career_market_publishing.sql", import.meta.url));
+  const migrationPath = fileURLToPath(new URL("../supabase/migrations/20260812090000_enable_us_career_market_publishing.sql", import.meta.url));
   const sql = readFileSync(migrationPath, "utf8");
   assert.match(sql, /country_slug not in \('sweden', 'united-states'\)/);
   assert.match(sql, /sourceCurrency' <> 'USD'/);
@@ -148,7 +149,7 @@ test("all seven United States targets retain raw official outlook and education 
     ["data-scientist", [33.5, 23_400]], ["registered-nurse", [4.9, 189_100]],
     ["accountant", [4.6, 124_200]],
   ]);
-  for (const researchTarget of CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "united-states")) {
+  for (const researchTarget of CAREER_RESEARCH_TARGETS.filter((item) => item.countrySlug === "united-states" && expected.has(item.careerSlug))) {
     const candidate = normalizeBlsOewsResponse(responseFor(researchTarget), researchTarget, "2026-08-15T12:00:00.000Z");
     assert.deepEqual([candidate.outlookEvidence?.value?.projectedGrowthPercent, candidate.outlookEvidence?.value?.annualOpenings], expected.get(researchTarget.careerSlug));
     assert.equal(candidate.outlookEvidence?.value?.forecastPeriod, "2024–2034");

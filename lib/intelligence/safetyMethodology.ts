@@ -521,19 +521,19 @@ export function calculateSafetyScore(
     ========================================================
 
     Do not output a Safety Score if less than
-    40% of the methodology is supported.
+    50% of the methodology is supported.
 
     This prevents a country from receiving a
     "Safety Score" based on one weak metric.
   */
 
-  if (availableWeight < 0.4) {
+  if (availableWeight < 0.5) {
     explanation.push(
       `Evidence coverage is only ${coveragePercent}%.`
     );
 
     explanation.push(
-      "SEKUR requires at least 40% methodology coverage before generating a Safety Score."
+      "SEKUR requires at least 50% methodology coverage before generating a Safety Score."
     );
 
     return {

@@ -27,7 +27,7 @@ test("Free and Pro entitlements remain configurable without pricing", () => {
 });
 
 test("corrective migration closes duplicate-save and shape gaps", () => {
-  const sql = readFileSync(new URL("../supabase/migrations/20260816_correct_user_career_intelligence.sql", import.meta.url), "utf8");
+  const sql = readFileSync(new URL("../supabase/migrations/20260816090000_correct_user_career_intelligence.sql", import.meta.url), "utf8");
   assert.match(sql, /item_type in \('career', 'country', 'career_market'\)/);
   assert.match(sql, /create unique index saved_career_markets_user_target_uidx/);
   assert.match(sql, /saved_career_markets_shape_check/);

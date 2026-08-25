@@ -52,12 +52,13 @@ test("Finland proof mappings normalize official deciles in native EUR", () => {
   }
 });
 
-test("ten validated Nordic targets are enabled while proxy mappings and publishing stay disabled", () => {
-  assert.equal(CAREER_RESEARCH_TARGETS.filter(({ countrySlug }) => ["norway", "finland"].includes(countrySlug)).length, 10);
+test("validated Nordic targets are enabled while unresolved mappings and publishing stay disabled", () => {
+  assert.equal(CAREER_RESEARCH_TARGETS.filter(({ countrySlug }) => ["norway", "finland"].includes(countrySlug)).length, 49);
   assert.equal(isCareerResearchSupported("software-engineer", "norway"), true);
   assert.equal(isCareerResearchSupported("accountant", "finland"), true);
   assert.equal(isCareerResearchSupported("cybersecurity-analyst", "norway"), false);
   assert.equal(isCareerResearchSupported("data-scientist", "finland"), false);
+  assert.equal(isCareerResearchSupported("physiotherapist", "finland"), false);
   const target = getCareerResearchTarget("mechanical-engineer", "norway")!;
   const candidate = normalizeNorwaySalaryResponse(fixture("ssb-11418-expanded-proof.json"), target, "2026-08-15T00:00:00Z");
   assert.throws(() => validateCareerResearchPublication({ id: 1, status: "approved", career_slug: target.careerSlug, country_slug: target.countrySlug, schema_version: "career-research-v1", candidate_profile: candidate }), /Publishing supports only/);

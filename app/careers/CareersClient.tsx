@@ -5,8 +5,9 @@ import { useMemo, useState } from "react";
 import SalaryRange from "@/components/SalaryRange";
 import SiteHeader from "@/components/SiteHeader";
 import { CareerListRecord, educationSummary } from "@/lib/careerModel";
+import { CAREER_CATEGORIES } from "@/lib/careerCatalog";
 
-const categories = ["All", "Technology", "Engineering", "Healthcare", "Skilled Trades", "Aviation", "Sales", "Construction"];
+const categories = ["All", ...CAREER_CATEGORIES];
 
 export default function CareersClient({ careers, initialSearch = "", initialCategory = "All", initialAiRisk = "All" }: { careers: CareerListRecord[]; initialSearch?: string; initialCategory?: string; initialAiRisk?: string }) {
   const [search, setSearch] = useState(initialSearch);
@@ -72,17 +73,17 @@ export default function CareersClient({ careers, initialSearch = "", initialCate
             <Link href={`/careers/${career.slug}`} key={career.id} className="glass-hover group rounded-2xl border border-white/10 bg-white/[0.035] p-6 transition hover:-translate-y-1 hover:border-emerald-300/35">
               <div className="flex items-start justify-between gap-4">
                 <div><div className="text-xs uppercase tracking-[0.16em] text-slate-500">{career.category ?? "Career"}</div><h2 className="mt-2 text-xl font-bold">{career.title}</h2></div>
-                <div className="signal-chip rounded-xl px-3 py-2 text-sm font-black">{career.career_score ?? "\u2014"}</div>
+                {career.career_score !== null && <div className="signal-chip rounded-xl px-3 py-2 text-sm font-black">{career.career_score}</div>}
               </div>
               {career.description && <p className="mt-4 line-clamp-3 text-sm leading-6 text-slate-400">{career.description}</p>}
-              <div className="mt-6 grid grid-cols-2 gap-3">
+              {(career.ai_risk || career.remote_work) && <div className="mt-6 grid grid-cols-2 gap-3">
                 <div className="rounded-xl bg-black/20 p-4"><div className="text-xs text-slate-500">AI risk</div><div className="mt-1 font-bold">{career.ai_risk ?? "Not rated"}</div></div>
                 <div className="rounded-xl bg-black/20 p-4"><div className="text-xs text-slate-500">Remote</div><div className="mt-1 font-bold">{career.remote_work ?? "Not rated"}</div></div>
-              </div>
-              <div className="mt-5 space-y-4 border-t border-white/10 pt-5 text-sm">
+              </div>}
+              {career.profile && <div className="mt-5 space-y-4 border-t border-white/10 pt-5 text-sm">
                 {career.profile?.salary && <div className="flex items-start justify-between gap-4"><span className="text-slate-500">U.S. base salary</span><span className="text-right font-semibold"><SalaryRange salary={career.profile.salary} showTypical={false} /></span></div>}
                 <div className="flex items-start justify-between gap-4"><span className="text-slate-500">Education</span><span className="text-right font-semibold">{educationSummary(career.profile?.education ?? null, career.education)}</span></div>
-              </div>
+              </div>}
             </Link>
           ))}
         </div>

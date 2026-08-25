@@ -5,9 +5,16 @@ import SiteHeader from "@/components/SiteHeader";
 import SaveIntelligenceControl from "@/components/user/SaveIntelligenceControl";
 import { getCountryIntelligence } from "@/lib/intelligence/service";
 import { supabase } from "@/lib/supabase";
+import { getCountryCatalogEntry } from "@/lib/countryCatalog";
+import { CAREER_CATALOG, CAREER_CATEGORIES, getCareerCatalogEntry } from "@/lib/careerCatalog";
+import { getCountryCareerProfiles } from "@/lib/careerCountryProfiles";
+import { careerMarketEligibility, publicCoverageMessage } from "@/lib/careerEvidenceEligibility";
+import MarketSalary from "@/components/MarketSalary";
+import LiveJobsPreview from "@/components/jobs/LiveJobsPreview";
+import OpportunityPreview from "@/components/opportunity/OpportunityPreview";
 
 type Country = {
-  id: number;
+  id: string;
   slug: string;
   name: string;
   code: string;
@@ -120,25 +127,26 @@ export default async function CountryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const catalogCountry = getCountryCatalogEntry(slug);
 
   /*
     1. Load basic country information.
   */
-  const { data: country, error } =
+  const { data: country } =
     await supabase
       .from("countries")
       .select("*")
       .eq("slug", slug)
-      .single();
+      .maybeSingle();
 
-  if (error || !country) {
+  if (!catalogCountry) {
     return (
       <main className="min-h-screen bg-[#07101f] text-white">
         <SiteHeader />
 
         <section className="mx-auto max-w-4xl px-6 py-24 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-400/10 text-3xl">
-            ðŸŒ
+            🌍
           </div>
 
           <h1 className="mt-6 text-4xl font-black">
@@ -160,8 +168,14 @@ export default async function CountryPage({
     );
   }
 
-  const typedCountry =
-    country as Country;
+  const typedCountry = { ...(country ?? {}), ...catalogCountry } as Country;
+  const careerProfiles = getCountryCareerProfiles(slug);
+  const careersWithEvidence = careerProfiles.map((profile) => ({
+    profile,
+    career: getCareerCatalogEntry(profile.careerSlug),
+    eligibility: careerMarketEligibility(profile.careerSlug, slug, profile),
+  })).filter((item) => item.career && item.eligibility.evidenceAvailable);
+  const discoverableCareers = CAREER_CATALOG.filter((career) => !careerProfiles.some((profile) => profile.careerSlug === career.slug));
 
   /*
     2. Load intelligence directly from Supabase.
@@ -335,6 +349,17 @@ export default async function CountryPage({
             </div>
           )}
         </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 pb-6">
+        <h2 className="text-3xl font-black">Career opportunities in {typedCountry.name}</h2>
+        <p className="mt-3 max-w-3xl text-slate-400">Evidence-backed opportunities are shown first. SEKUR does not rank careers when the available evidence is not sufficiently comparable.</p>
+        {careersWithEvidence.length > 0 ? CAREER_CATEGORIES.map((category) => {
+          const items = careersWithEvidence.filter((item) => item.career?.category === category);
+          if (items.length === 0) return null;
+          return <div key={category} className="mt-8"><h3 className="text-xl font-black">{category}</h3><div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{items.map(({ profile, career, eligibility }) => <Link key={profile.careerSlug} href={`/careers/${profile.careerSlug}?country=${slug}`} className="glass-hover rounded-2xl border border-white/10 bg-white/[0.035] p-5 transition hover:-translate-y-1 hover:border-emerald-300/30"><h4 className="text-lg font-black">{career?.title}</h4><dl className="mt-4 grid gap-3 sm:grid-cols-2"><div><dt className="text-xs text-slate-500">Typical salary</dt><dd className="mt-1 font-bold"><MarketSalary salary={profile.salary} /></dd></div><div><dt className="text-xs text-slate-500">Job outlook</dt><dd className="mt-1 font-bold">{profile.hiringOutlook.value ?? "Currently unavailable"}</dd></div></dl>{publicCoverageMessage(eligibility.coverage) && <p className="mt-4 text-sm text-slate-400">{publicCoverageMessage(eligibility.coverage)}</p>}</Link>)}</div></div>;
+        }) : <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.025] p-6"><h3 className="font-black">Detailed market data is not available yet.</h3><p className="mt-2 text-sm text-slate-400">We&apos;re still expanding career data for this country.</p></div>}
+        <details className="mt-10 rounded-2xl border border-white/10 p-5"><summary className="cursor-pointer font-bold">More careers in SEKUR</summary><p className="mt-3 text-sm text-slate-400">These careers are discoverable, but detailed evidence for {typedCountry.name} is still being expanded.</p><div className="mt-5 space-y-7">{CAREER_CATEGORIES.map((category) => { const items = discoverableCareers.filter((career) => career.category === category); return items.length ? <div key={category}><h3 className="font-black">{category}</h3><div className="mt-3 flex flex-wrap gap-2">{items.map((career) => <Link key={career.slug} href={`/careers/${career.slug}`} className="rounded-full border border-white/10 px-3 py-2 text-sm text-slate-300 hover:border-white/20 hover:text-white">{career.title}</Link>)}</div></div> : null; })}</div></details>
       </section>
 
       {/* QUICK FACTS */}
@@ -545,22 +570,22 @@ export default async function CountryPage({
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           <InfoCard
-            title="ðŸ’° Salary Intelligence"
+              title="Salary intelligence"
             text={`Current intelligence rating: ${salary}.`}
           />
 
           <InfoCard
-            title="ðŸ“ˆ Hiring Trends"
+              title="Hiring trends"
             text={`Current intelligence rating: ${hiring}.`}
           />
 
           <InfoCard
-            title="ðŸ“‰ Layoff Trends"
+              title="Layoff trends"
             text="Workforce risk and employer-demand intelligence will be added as verified market data becomes available."
           />
 
           <InfoCard
-            title="ðŸ  Cost of Living"
+              title="Cost of living"
             text={`Current affordability rating: ${costOfLiving}.`}
           />
 
@@ -570,26 +595,34 @@ export default async function CountryPage({
           />
 
           <InfoCard
-            title="ðŸ›‚ Visa & Residency"
+              title="Visa and residency"
             text={`Current intelligence rating: ${visa}.`}
           />
 
           <InfoCard
-            title="ðŸ¥ Healthcare"
+              title="Healthcare"
             text={`Current intelligence rating: ${healthcare}.`}
           />
 
           <InfoCard
-            title="ðŸ›¡ Safety"
+              title="Safety"
             text={`Current intelligence rating: ${safety}.`}
           />
 
           <InfoCard
-            title="ðŸ¢ Top Employers"
+              title="Top employers"
             text={`Discover companies and industries relevant to professionals in ${typedCountry.name}.`}
           />
         </div>
       </section>
+
+      <LiveJobsPreview
+        country={typedCountry.slug}
+        title={`Jobs hiring now in ${typedCountry.name}`}
+        limit={4}
+      />
+
+      <OpportunityPreview country={typedCountry.slug} title={`Your opportunities in ${typedCountry.name}`} />
 
       {/* PERSONAL INTELLIGENCE */}
       <section className="mx-auto max-w-7xl px-6 pb-20">

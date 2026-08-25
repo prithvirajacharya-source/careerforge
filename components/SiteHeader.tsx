@@ -23,9 +23,11 @@ export default function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-7 text-sm md:flex">
-          <Link href="/careers" className="text-slate-200 transition hover:text-white">Explore</Link>
-          <Link href="/compare" className="text-slate-200 transition hover:text-white">Compare</Link>
+          <Link href="/careers" className="text-slate-200 transition hover:text-white">Careers</Link>
+          <Link href="/jobs" className="text-slate-200 transition hover:text-white">Jobs</Link>
+          <Link href="/countries" className="text-slate-200 transition hover:text-white">Countries</Link>
           <Link href="/saved" className="text-slate-200 transition hover:text-white">Saved</Link>
+          <Link href="/profile" className="text-slate-200 transition hover:text-white">Account</Link>
         </nav>
 
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -35,7 +37,7 @@ export default function SiteHeader() {
         </div>
       </div>
       <nav className="mx-auto flex max-w-7xl justify-around border-t border-white/10 px-3 py-2 text-xs font-bold text-slate-300 md:hidden">
-        <Link href="/careers">Explore</Link><Link href="/compare">Compare</Link><Link href="/saved">Saved</Link><Link href="/profile">Account</Link>
+        <Link href="/careers">Careers</Link><Link href="/jobs">Jobs</Link><Link href="/countries">Countries</Link><Link href="/saved">Saved</Link><Link href="/profile">Account</Link>
       </nav>
     </header>
   );

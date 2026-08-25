@@ -678,6 +678,9 @@ export default function ResearchSuggestionsPage() {
               suggestions={
                 suggestions
               }
+              onSuggestionResolved={
+                loadSuggestions
+              }
             />
           </div>
         )}

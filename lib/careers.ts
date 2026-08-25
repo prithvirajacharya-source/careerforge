@@ -1,24 +1,26 @@
 import { supabase } from "./supabase";
 import { CareerListRecord, educationSummary } from "./careerModel";
 import { careerProfiles, getCareerProfile } from "./careerProfiles";
+import { CAREER_CATALOG } from "./careerCatalog";
 
 const CAREER_LIST_READ_TIMEOUT_MS = 3_500;
 
 function fallbackCareers(): CareerListRecord[] {
-  return Object.values(careerProfiles)
-    .sort((left, right) => right.score - left.score)
-    .map((profile) => ({
-      id: profile.slug,
-      slug: profile.slug,
-      title: profile.title,
-      category: profile.category,
-      description: profile.description,
-      education: educationSummary(profile.education, profile.legacyEducationLabel),
-      ai_risk: profile.aiRisk,
-      remote_work: profile.remote,
-      career_score: profile.score,
+  return CAREER_CATALOG.map((entry) => {
+    const profile = careerProfiles[entry.slug];
+    return {
+      id: entry.slug,
+      slug: entry.slug,
+      title: entry.title,
+      category: entry.category,
+      description: profile?.description ?? entry.description,
+      education: profile ? educationSummary(profile.education, profile.legacyEducationLabel) : null,
+      ai_risk: profile?.aiRisk ?? null,
+      remote_work: profile?.remote ?? null,
+      career_score: profile?.score ?? null,
       profile,
-    }));
+    };
+  });
 }
 
 export async function getCareers() {
@@ -47,22 +49,14 @@ export async function getCareers() {
 
   if (!data?.length) return fallbackCareers();
 
-  return (data ?? []).map((career) => {
-    const profile = getCareerProfile(career.slug);
-
-    if (!profile) {
-      return career;
-    }
-
+  const rows = new Map((data ?? []).map((career) => [career.slug, career]));
+  return fallbackCareers().map((catalogCareer) => {
+    const row = rows.get(catalogCareer.slug);
+    const profile = getCareerProfile(catalogCareer.slug);
+    if (!row) return catalogCareer;
     return {
-      ...career,
-      title: profile.title,
-      category: profile.category,
-      description: profile.description,
-      education: educationSummary(profile.education, profile.legacyEducationLabel),
-      ai_risk: profile.aiRisk,
-      remote_work: profile.remote,
-      career_score: profile.score,
+      ...row,
+      ...catalogCareer,
       profile,
     };
   });

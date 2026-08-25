@@ -117,22 +117,12 @@ export default async function ComparePage({
       <SiteHeader />
 
       <section className="mx-auto max-w-7xl px-6 py-16">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">
-          SEKUR Compare
-        </p>
-
         <h1 className="mt-4 text-5xl font-black tracking-tight md:text-6xl">
-          Compare countries
-          <span className="block bg-gradient-to-r from-blue-400 to-emerald-300 bg-clip-text text-transparent">
-            before you decide.
-          </span>
+          Compare career opportunities
         </h1>
 
         <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-400">
-          Compare countries using the
-          same live SEKUR Intelligence
-          Engine that powers their
-          individual profiles.
+          See salary, outlook and other available information side by side.
         </p>
 
         <CompareClient

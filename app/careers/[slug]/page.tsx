@@ -12,6 +12,14 @@ import { getCareerCountryProfiles } from "@/lib/careerCountryProfiles";
 import { resolveCareerCountryProfile } from "@/lib/careerMarketProfiles";
 import { getCareerProfile } from "@/lib/careerProfiles";
 import { getCountries } from "@/lib/countries";
+import { getCareerCatalogEntry, type CareerCatalogEntry } from "@/lib/careerCatalog";
+import type { CountryCatalogEntry } from "@/lib/countryCatalog";
+import { careerMarketEligibility, publicCoverageMessage } from "@/lib/careerEvidenceEligibility";
+import type { CareerCountryProfile } from "@/lib/careerCountryModel";
+import LiveJobsPreview from "@/components/jobs/LiveJobsPreview";
+import OpportunityPreview from "@/components/opportunity/OpportunityPreview";
+import StudyResourceCards from "@/components/learning/StudyResourceCards";
+import { recommendStudyResources } from "@/lib/learning/recommendStudyResources";
 
 function Metric({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -34,6 +42,57 @@ function ResearchBadge({ status }: { status: "verified" | "estimated" | "needs-r
   );
 }
 
+function CareerOverview({ entry, profiles, countries }: { entry: CareerCatalogEntry; profiles: CareerCountryProfile[]; countries: CountryCatalogEntry[] }) {
+  const available = profiles.map((profile) => ({
+    profile,
+    country: countries.find((country) => country.slug === profile.countrySlug),
+    eligibility: careerMarketEligibility(entry.slug, profile.countrySlug, profile),
+  })).filter((item) => item.country && item.eligibility.evidenceAvailable);
+  const discoverable = countries.filter((country) => !profiles.some((profile) => profile.countrySlug === country.slug));
+  const rankingAvailable = available.length > 1 && available.every((item) => item.eligibility.rankEligible);
+
+  return (
+    <main className="sekur-discovery min-h-screen bg-[#07101f] text-white">
+      <SiteHeader />
+      <section className="mx-auto max-w-7xl px-6 py-16">
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">{entry.category}</p>
+        <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl md:text-6xl">Best countries for {entry.title}s</h1>
+        <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-400">{entry.description}</p>
+        {entry.regulatedProfession && <p className="mt-4 max-w-3xl rounded-xl border border-amber-300/15 bg-amber-300/[0.06] px-4 py-3 text-sm text-amber-100">Salary and opportunity information does not establish legal eligibility to practise. {entry.regulationNote}</p>}
+
+        <section className="mt-12">
+          <div className="flex flex-wrap items-end justify-between gap-4"><div><h2 className="text-2xl font-black">Countries with available market data</h2><p className="mt-2 text-sm text-slate-400">{rankingAvailable ? "Comparable verified evidence is available for these markets." : "Shown without a best-to-worst ranking because evidence coverage differs by market."}</p></div></div>
+          {available.length > 0 ? <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{available.map(({ profile, country, eligibility }) => (
+            <Link key={profile.countrySlug} href={`/careers/${entry.slug}?country=${profile.countrySlug}`} className="glass-hover rounded-2xl border border-white/10 bg-white/[0.035] p-5 transition hover:-translate-y-1 hover:border-emerald-300/30">
+              <h3 className="text-xl font-black">{country?.name}</h3>
+              <dl className="mt-5 grid gap-4 sm:grid-cols-2"><div><dt className="text-xs text-slate-500">Typical salary</dt><dd className="mt-1 font-bold"><MarketSalary salary={profile.salary} /></dd></div><div><dt className="text-xs text-slate-500">Job outlook</dt><dd className="mt-1 font-bold">{profile.hiringOutlook.value ?? "Currently unavailable"}</dd></div></dl>
+              {publicCoverageMessage(eligibility.coverage) && <p className="mt-4 text-sm text-slate-400">{publicCoverageMessage(eligibility.coverage)}</p>}
+            </Link>
+          ))}</div> : <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.025] p-6"><h3 className="font-black">Detailed market data is not available yet.</h3><p className="mt-2 text-sm text-slate-400">We&apos;re still expanding data for this career.</p></div>}
+        </section>
+
+        <details className="mt-12"><summary className="cursor-pointer text-lg font-black">More countries in SEKUR</summary><p className="mt-3 text-sm text-slate-400">Additional country intelligence is being expanded.</p><div className="mt-5 grid grid-cols-2 gap-x-8 gap-y-1 sm:grid-cols-3 lg:grid-cols-4">{discoverable.map((country) => <div key={country.slug} className="py-3 font-semibold text-slate-300">{country.name}</div>)}</div></details>
+      </section>
+    </main>
+  );
+}
+
+function UnavailableOpportunity({ entry, country }: { entry: CareerCatalogEntry; country: CountryCatalogEntry }) {
+  return (
+    <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
+      <SiteHeader />
+      <section className="mx-auto max-w-5xl px-6 py-16">
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">{entry.category}</p>
+        <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl md:text-6xl">{entry.title}<span className="mt-2 block text-emerald-300 md:text-[0.72em]">· {country.name}</span></h1>
+        <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-400">{entry.description}</p>
+        <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.035] p-6"><h2 className="text-xl font-black">Detailed market data is not available yet.</h2><p className="mt-3 text-slate-400">We&apos;re still expanding data for this opportunity. SEKUR will not substitute another country&apos;s salary or generate an unsupported ranking.</p></div>
+        {entry.regulatedProfession && <p className="mt-4 rounded-xl border border-amber-300/15 bg-amber-300/[0.06] px-4 py-3 text-sm text-amber-100">Salary information does not establish legal eligibility to practise. {entry.regulationNote}</p>}
+        <div className="mt-6 flex flex-wrap gap-4"><SaveIntelligenceControl itemType="career_market" careerSlug={entry.slug} countrySlug={country.slug} label="Save this opportunity" /><Link href={`/careers/${entry.slug}`} className="rounded-xl border border-white/15 px-5 py-3 font-bold text-slate-200">View countries with data</Link></div>
+      </section>
+    </main>
+  );
+}
+
 export default async function CareerPage({
   params,
   searchParams,
@@ -44,8 +103,11 @@ export default async function CareerPage({
   const { slug } = await params;
   const { country: requestedCountry } = await searchParams;
   const career = getCareerProfile(slug);
+  const catalogEntry = getCareerCatalogEntry(slug);
+  const marketProfiles = getCareerCountryProfiles(slug);
+  const countryRows = await getCountries();
 
-  if (!career) {
+  if (!catalogEntry) {
     return (
       <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
         <SiteHeader />
@@ -53,7 +115,7 @@ export default async function CareerPage({
           <div className="text-4xl" aria-hidden="true">&#128269;</div>
           <h1 className="mt-6 text-4xl font-black">Career intelligence is being prepared</h1>
           <p className="mx-auto mt-4 max-w-xl text-slate-400">
-            This career exists in SEKUR, but its full intelligence profile has not been published yet.
+            This career is not in the SEKUR beta catalog.
           </p>
           <Link href="/careers" className="mt-8 inline-block rounded-xl bg-blue-500 px-6 py-3 font-bold text-slate-950">
             Back to Career Explorer
@@ -63,8 +125,15 @@ export default async function CareerPage({
     );
   }
 
-  const marketProfiles = getCareerCountryProfiles(slug);
-  const countryRows = marketProfiles.length > 0 ? await getCountries() : [];
+  const requestedCatalogCountry = requestedCountry ? countryRows.find((country) => country.slug === requestedCountry) : null;
+  const validRequestedCountry = requestedCountry && marketProfiles.some((profile) => profile.countrySlug === requestedCountry);
+  if (requestedCatalogCountry && !validRequestedCountry) {
+    return <UnavailableOpportunity entry={catalogEntry} country={requestedCatalogCountry} />;
+  }
+  if (!career || !validRequestedCountry) {
+    return <CareerOverview entry={catalogEntry} profiles={marketProfiles} countries={countryRows} />;
+  }
+
   const marketFallbacks: Record<string, CareerCountryMarket> = {
     "united-states": { slug: "united-states", name: "United States", code: "US", currency: "USD" },
     sweden: { slug: "sweden", name: "Sweden", code: "SE", currency: "SEK" },
@@ -81,12 +150,7 @@ export default async function CareerPage({
         }
       : marketFallbacks[profile.countrySlug];
   }).filter(Boolean) as CareerCountryMarket[];
-  const defaultCountrySlug = marketProfiles.some((profile) => profile.countrySlug === "united-states")
-    ? "united-states"
-    : marketProfiles[0]?.countrySlug;
-  const selectedCountrySlug = marketProfiles.some((profile) => profile.countrySlug === requestedCountry)
-    ? requestedCountry as string
-    : defaultCountrySlug;
+  const selectedCountrySlug = requestedCountry;
   const selectedMarketProfile = selectedCountrySlug
     ? await resolveCareerCountryProfile(slug, selectedCountrySlug)
     : null;
@@ -106,8 +170,13 @@ export default async function CareerPage({
     career.legacySalaryLabel ?? "Research required"
   );
   const hiring = selectedMarketProfile
-    ? selectedMarketProfile.hiringOutlook.value ?? "Not published"
+    ? selectedMarketProfile.hiringOutlook.value ?? <><span>Currently unavailable</span><span className="mt-2 block text-xs font-medium leading-5 text-slate-500">We don&apos;t have verified outlook data for this market yet.</span></>
     : career.hiring;
+  const studyRecommendations =
+    recommendStudyResources(
+      career.skills,
+      6
+    );
   return (
     <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
       <SiteHeader />
@@ -143,13 +212,22 @@ export default async function CareerPage({
         <Metric label="Remote flexibility" value={career.remote} />
       </section>
 
+      <LiveJobsPreview
+        country={selectedCountrySlug ?? "sweden"}
+        career={career.slug}
+        title="Live Jobs"
+        limit={6}
+      />
+
+      <OpportunityPreview career={career.slug} title="Best countries for this career" />
+
       {salary && (
         <section className="mx-auto max-w-7xl px-6 pt-12">
           <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-5 sm:p-7">
             <div>
               <div>
                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">{(salary.period ?? "annual") === "annual" ? "Annual salary" : `${salary.period} wage`}</p>
-                <h2 className="mt-2 text-2xl font-black">Compare the market range</h2>
+                <h2 className="mt-2 text-2xl font-black">Salary range</h2>
               </div>
             </div>
             {salary.verificationStatus === "needs-research" ? (
@@ -185,7 +263,7 @@ export default async function CareerPage({
                 <div key={label as string} className="rounded-2xl border border-white/10 bg-white/[0.035] p-6">
                   <div className="text-xs font-bold uppercase tracking-[0.15em] text-slate-500">{label as string}</div>
                   <div className={`mt-3 text-lg font-bold ${marketField.value ? "text-white" : "text-slate-300"}`}>
-                    {marketField.value ?? "Not published for this market"}
+                    {marketField.value ?? "Currently unavailable"}
                   </div>
                   {!marketField.value && (
                     <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -250,10 +328,9 @@ export default async function CareerPage({
             ))}</div>
           </div>
           <div>
-            <h2 className="text-3xl font-black">Courses and materials</h2>
-            <div className="mt-6 space-y-3">{career.courses.map((course) => (
-              <div key={course.title} className="rounded-2xl border border-white/10 bg-[#0b1527] p-5"><div className="text-xs uppercase tracking-wide text-slate-500">{course.type}</div><div className="mt-2 font-bold">{course.title}</div></div>
-            ))}</div>
+            <h2 className="text-3xl font-black">Recommended Study Material</h2>
+            <p className="mt-3 text-slate-400">Verified external resources matched to this career&apos;s skill taxonomy.</p>
+            <StudyResourceCards recommendations={studyRecommendations} />
           </div>
         </div>
       </section>

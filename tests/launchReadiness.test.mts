@@ -29,9 +29,10 @@ test("career discovery has a bounded canonical fallback", () => {
   assert.match(careers, /CAREER_LIST_READ_TIMEOUT_MS/);
   assert.match(careers, /AbortController/);
   assert.match(careers, /return fallbackCareers\(\)/);
-  assert.match(careers, /Object\.values\(careerProfiles\)/);
+  assert.match(careers, /CAREER_CATALOG\.map/);
 });
 
-test("country discovery fails visibly instead of rendering a blank catalog", () => {
-  assert.match(read("../app/countries/page.tsx"), /Country intelligence is temporarily unavailable/);
+test("country discovery uses the canonical beta catalog instead of rendering blank", () => {
+  assert.match(read("../lib/countries.ts"), /return COUNTRY_CATALOG/);
+  assert.match(read("../app/countries/page.tsx"), /Career opportunities around the world/);
 });

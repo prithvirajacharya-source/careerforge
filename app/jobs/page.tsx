@@ -1,0 +1,4 @@
+import { Suspense } from "react";
+import SiteHeader from "@/components/SiteHeader";
+import JobsSearchClient from "@/components/jobs/JobsSearchClient";
+export default function JobsPage() { return <main className="min-h-screen bg-[#07101f] text-white"><SiteHeader /><section className="mx-auto max-w-7xl px-5 py-14 sm:px-6"><p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-300">SEKUR Jobs + Learning</p><h1 className="mt-4 text-4xl font-black sm:text-6xl">Find work. See the gap. Learn what&apos;s next.</h1><p className="mt-5 max-w-3xl text-lg leading-8 text-slate-400">Search trustworthy live sources, understand each role, and connect required skills to verified learning resources.</p><div className="mt-10"><Suspense fallback={<div className="rounded-2xl border border-white/10 p-8 text-slate-400">Preparing job search…</div>}><JobsSearchClient /></Suspense></div></section></main>; }

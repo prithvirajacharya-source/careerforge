@@ -40,7 +40,8 @@ test("all Denmark mappings preserve official hourly DKK evidence", () => {
 
 test("all Canada mappings preserve official hourly CAD evidence", () => {
   const text = fixture("canada-jobbank-proof.csv");
-  const targets = CAREER_RESEARCH_TARGETS.filter(({ countrySlug }) => countrySlug === "canada");
+  const proofSlugs = new Set(["mechanical-engineer", "registered-nurse", "software-engineer", "electrical-engineer", "accountant", "cybersecurity-analyst", "data-scientist"]);
+  const targets = CAREER_RESEARCH_TARGETS.filter(({ countrySlug, careerSlug }) => countrySlug === "canada" && proofSlugs.has(careerSlug));
   assert.equal(targets.length, 7);
   for (const target of targets) {
     const candidate = normalizeCanadaWageCsv(text, target, "2026-08-15T00:00:00Z");

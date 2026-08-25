@@ -3,6 +3,20 @@ import type { CareerResearchCandidate, CareerResearchRunStatus } from "./model.t
 import { validateCareerResearchCandidate } from "./model.ts";
 import { getCareerResearchTarget } from "./registry.ts";
 
+const PUBLISHABLE_CAREERS = new Set([
+  "mechanical-engineer",
+  "cybersecurity-analyst",
+  "software-engineer",
+  "electrical-engineer",
+  "data-scientist",
+  "registered-nurse",
+  "accountant",
+]);
+
+export function isCareerResearchPublishingSupported(careerSlug: string, countrySlug: string) {
+  return ["sweden", "united-states"].includes(countrySlug) && PUBLISHABLE_CAREERS.has(careerSlug);
+}
+
 export type PublishableResearchRun = {
   id: number;
   status: CareerResearchRunStatus;
@@ -34,7 +48,7 @@ export function validateCareerResearchPublication(run: PublishableResearchRun) {
   }
 
   const target = getCareerResearchTarget(run.career_slug, run.country_slug);
-  if (!target?.enabled || !["sweden", "united-states"].includes(run.country_slug)) {
+  if (!target?.enabled || !isCareerResearchPublishingSupported(run.career_slug, run.country_slug)) {
     throw new Error("Publishing supports only enabled career research targets.");
   }
   validateCareerResearchCandidate(candidate, target.nativeCurrency);

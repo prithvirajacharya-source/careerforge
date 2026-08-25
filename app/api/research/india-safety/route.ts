@@ -161,7 +161,7 @@ function extractHomicideData(
   Total coverage = 35%.
 
   That is below SEKUR Safety v3's
-  minimum publishable threshold of 40%.
+  minimum publishable threshold of 50%.
 
   The shared factory will therefore:
 
@@ -243,7 +243,7 @@ async function collectIndiaSafetyEvidence(): Promise<SafetyResearchEvidence> {
 
       "India currently has only homicide and homicide-trend components available to this runner.",
 
-      "This provides 35% methodology coverage, below the 40% minimum required for a publishable Safety recommendation.",
+      "This provides 35% methodology coverage, below the 50% minimum required for a publishable Safety recommendation.",
     ],
   };
 }

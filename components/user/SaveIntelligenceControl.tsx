@@ -1,13 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { trackMonetizationEvent } from "@/lib/personalization/analytics";
 
 type SaveTarget = { itemType: "career" | "country" | "career_market"; careerSlug?: string; countrySlug?: string; label?: string };
 
 export default function SaveIntelligenceControl({ itemType, careerSlug, countrySlug, label = "Save" }: SaveTarget) {
+  const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -25,10 +26,13 @@ export default function SaveIntelligenceControl({ itemType, careerSlug, countryS
         return;
       }
       setSavedId(row?.id ?? null);
+      if (new URLSearchParams(window.location.search).get("save") === "ready") {
+        setMessage(row ? "Already saved." : `Signed in. Select ${label} to finish.`);
+      }
     });
-  }, [careerSlug, countrySlug, itemType]);
+  }, [careerSlug, countrySlug, itemType, label]);
 
-  if (!userId) return <Link href="/profile" className="rounded-lg border border-white/15 bg-black/15 px-3 py-2 text-xs font-bold text-slate-300 hover:text-white">{label}</Link>;
+  if (!userId) return <button type="button" onClick={() => { const returnUrl = new URL(window.location.href); returnUrl.searchParams.set("save", "ready"); router.push(`/profile?returnTo=${encodeURIComponent(`${returnUrl.pathname}${returnUrl.search}`)}`); }} className="rounded-lg border border-white/15 bg-black/15 px-3 py-2 text-xs font-bold text-slate-300 hover:text-white">Sign in to save</button>;
   async function toggle() {
     if (busy) return;
     setBusy(true);
@@ -50,5 +54,5 @@ export default function SaveIntelligenceControl({ itemType, careerSlug, countryS
       setBusy(false);
     }
   }
-  return <div><button type="button" onClick={toggle} disabled={busy} aria-pressed={Boolean(savedId)} className={`rounded-lg border px-3 py-2 text-xs font-bold transition disabled:opacity-50 ${savedId ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-200" : "border-white/15 bg-black/15 text-slate-300 hover:text-white"}`}>{savedId ? "Saved" : label}</button>{message && <p role="status" className="mt-2 max-w-64 text-xs text-red-200">{message}</p>}</div>;
+  return <div><button type="button" onClick={toggle} disabled={busy} aria-pressed={Boolean(savedId)} className={`rounded-lg border px-3 py-2 text-xs font-bold transition disabled:opacity-50 ${savedId ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-200" : "border-white/15 bg-black/15 text-slate-300 hover:text-white"}`}>{savedId ? "Saved" : label}</button>{message && <p role="status" className="mt-2 max-w-72 text-xs text-slate-300">{message}</p>}</div>;
 }

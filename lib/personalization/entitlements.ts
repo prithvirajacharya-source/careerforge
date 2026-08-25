@@ -1,4 +1,4 @@
-export type EntitlementFeature = "basicProfile" | "savedIntelligence" | "basicReport" | "advancedReport" | "alerts" | "advancedComparisons" | "careerSwitchPlanner" | "salaryNegotiationReport" | "deepFactorBreakdown";
+export type EntitlementFeature = "basicProfile" | "savedIntelligence" | "basicReport" | "advancedReport" | "alerts" | "advancedComparisons" | "careerSwitchPlanner" | "salaryNegotiationReport" | "deepFactorBreakdown" | "personalizedJobMatch" | "opportunityMonitoring" | "advancedActionPlan";
 
 const FREE_FEATURES: Record<EntitlementFeature, boolean> = {
   basicProfile: true,
@@ -10,6 +10,9 @@ const FREE_FEATURES: Record<EntitlementFeature, boolean> = {
   careerSwitchPlanner: false,
   salaryNegotiationReport: false,
   deepFactorBreakdown: false,
+  personalizedJobMatch: false,
+  opportunityMonitoring: false,
+  advancedActionPlan: false,
 };
 
 export function resolveEntitlements(planKey: string | null | undefined, overrides: Record<string, unknown> = {}) {

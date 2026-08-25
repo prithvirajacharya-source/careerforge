@@ -1,4 +1,6 @@
 import { CAREER_RESEARCH_COUNTRY_SOURCES } from "./countryRegistry.ts";
+import { PRIORITY_CAREER_MAPPINGS, type ExpansionCountry } from "./mappingCandidates.ts";
+export { PRIORITY_CAREER_MAPPINGS } from "./mappingCandidates.ts";
 
 export type CareerResearchTarget = {
   careerSlug: string;
@@ -14,7 +16,27 @@ export type CareerResearchTarget = {
   enabled: boolean;
 };
 
+const expansionSources: Record<ExpansionCountry, Omit<CareerResearchTarget, "careerSlug" | "careerName" | "occupationCode">> = {
+  sweden: { countrySlug: "sweden", countryName: "Sweden", countryCode: "SE", nativeCurrency: "SEK", sourceType: "scb-pxweb", sourceUrl: "https://www.statistikdatabasen.scb.se/goto/sv/ssd/LoneSpridSektYrk4AN", endpoint: "/api/research/career-market", enabled: true },
+  "united-states": { countrySlug: "united-states", countryName: "United States", countryCode: "US", nativeCurrency: "USD", sourceType: "bls-oews-api", sourceUrl: "https://www.bls.gov/oes/current/oes_nat.htm", endpoint: "/api/research/career-market", enabled: true },
+  norway: { countrySlug: "norway", countryName: "Norway", countryCode: "NO", nativeCurrency: "NOK", sourceType: "ssb-pxweb", sourceUrl: "https://www.ssb.no/en/statbank/table/11418", endpoint: "/api/research/career-market", enabled: true },
+  finland: { countrySlug: "finland", countryName: "Finland", countryCode: "FI", nativeCurrency: "EUR", sourceType: "statfin-pxweb", sourceUrl: "https://pxweb2.stat.fi/PxWeb/pxweb/en/StatFin/StatFin__pra/15au.px/", endpoint: "/api/research/career-market", enabled: true },
+  denmark: { countrySlug: "denmark", countryName: "Denmark", countryCode: "DK", nativeCurrency: "DKK", sourceType: "statbank-dk", sourceUrl: "https://www.statbank.dk/LONS20", endpoint: "/api/research/career-market", enabled: true },
+  canada: { countrySlug: "canada", countryName: "Canada", countryCode: "CA", nativeCurrency: "CAD", sourceType: "canada-jobbank-csv", sourceUrl: "https://open.canada.ca/data/en/dataset/adad580f-76b0-4502-bd05-20c125de9116", endpoint: "/api/research/career-market", enabled: true },
+  "united-kingdom": { countrySlug: "united-kingdom", countryName: "United Kingdom", countryCode: "GB", nativeCurrency: "GBP", sourceType: "ons-ashe-bulk", sourceUrl: "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/occupation4digitsoc2010ashetable14", endpoint: "/api/research/career-market", enabled: true },
+};
+
+const priorityExpansionTargets = (Object.keys(expansionSources) as ExpansionCountry[]).flatMap((countrySlug) => PRIORITY_CAREER_MAPPINGS.flatMap((mapping) => {
+  const occupationCode = mapping.codes[countrySlug];
+  if (!occupationCode) return [];
+  const sourceUrl = countrySlug === "united-states"
+    ? `https://www.bls.gov/oes/current/oes${occupationCode.replace("-", "")}.htm`
+    : expansionSources[countrySlug].sourceUrl;
+  return [{ ...expansionSources[countrySlug], sourceUrl, careerSlug: mapping.careerSlug, careerName: mapping.careerName, occupationCode }];
+}));
+
 export const CAREER_RESEARCH_TARGETS: CareerResearchTarget[] = [
+  ...priorityExpansionTargets,
   ...[
     ["mechanical-engineer", "Mechanical Engineer", "2122"], ["registered-nurse", "Registered Nurse", "2237"], ["software-engineer", "Software Engineer", "2134"], ["electrical-engineer", "Electrical Engineer", "2123"], ["accountant", "Accountant", "2421"], ["cybersecurity-analyst", "Cybersecurity Analyst", "2135"],
   ].map(([careerSlug, careerName, occupationCode]) => ({ careerSlug, careerName, countrySlug: "united-kingdom", countryName: "United Kingdom", countryCode: "GB", nativeCurrency: "GBP", sourceType: "ons-ashe-bulk" as const, occupationCode, sourceUrl: "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/occupation4digitsoc2010ashetable14", endpoint: "/api/research/career-market", enabled: true })),

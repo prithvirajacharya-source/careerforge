@@ -11,7 +11,7 @@ test("rollback selection requires a matching immutable target version", () => {
 });
 
 test("rollback migration remains admin-only, append-only, and creates a new version", () => {
-  const sql = readFileSync(new URL("../supabase/migrations/20260815_add_career_market_rollback.sql", import.meta.url), "utf8");
+  const sql = readFileSync(new URL("../supabase/migrations/20260815090000_add_career_market_rollback.sql", import.meta.url), "utf8");
   assert.match(sql, /app_metadata[\s\S]*role[\s\S]*admin/);
   assert.match(sql, /event_type, before_profile, after_profile/);
   assert.match(sql, /'rollback'/);
