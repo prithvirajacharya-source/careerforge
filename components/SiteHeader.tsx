@@ -9,15 +9,15 @@ export default function SiteHeader() {
   return (
     <header className="site-header">
       <div className="product-container site-header-inner">
-        <Link href="/" className="flex shrink-0 items-center gap-3">
+        <Link href="/" className="site-brand">
           <SekurMark className="site-logo-mark" />
 
-          <div>
-            <div className="text-xl font-black tracking-tight">
+          <div className="site-brand-copy">
+            <div className="site-brand-wordmark">
               SEKUR
             </div>
 
-            <div className="site-brand-subtitle text-[9px] uppercase tracking-[0.28em] text-slate-200/80">
+            <div className="site-brand-subtitle">
               Career Intelligence
             </div>
           </div>

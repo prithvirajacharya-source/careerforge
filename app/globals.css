@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+.currency-menu-list{width:290px!important;max-width:calc(100vw - 16px)!important}.currency-menu-option{grid-template-columns:44px minmax(0,1fr) 16px!important;gap:9px!important;padding:10px 11px!important;font-size:.8125rem!important;line-height:1.3!important}.currency-menu-option strong{color:var(--sekur-navy)!important;font-size:.8125rem;font-weight:800!important}.currency-menu-option span:nth-child(2){color:#334155!important;font-size:.8125rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.currency-menu-option[aria-selected="true"] strong,.currency-menu-option[aria-selected="true"] span:nth-child(2){color:#1e3a8a!important}
+
+.site-header .site-header-inner{min-height:64px}@media(max-width:640px){.site-header .site-header-inner{min-height:58px}}
+
+.site-header-inner{min-height:64px}.site-brand{display:flex;flex:none;align-items:center;gap:12px}.site-logo-mark{width:42px!important;height:42px!important}.site-brand-copy{display:flex;flex-direction:column;justify-content:center;gap:1px;line-height:1}.site-brand-wordmark{color:var(--sekur-navy);font-size:1.45rem;font-weight:900;letter-spacing:-.035em}.site-brand-subtitle{color:#52647c!important;font-size:.625rem;font-weight:750;letter-spacing:.16em;line-height:1.2;text-transform:uppercase}@media(max-width:640px){.site-header-inner{min-height:58px}.site-brand{gap:9px}.site-logo-mark{width:38px!important;height:38px!important}.site-brand-wordmark{font-size:1.25rem}.site-brand-subtitle{display:block!important;font-size:.5rem;letter-spacing:.1em}}
+
 .sekur-workspace :where(a,button).bg-emerald-300,.sekur-discovery :where(a,button).bg-emerald-300,.sekur-intelligence :where(a,button).bg-emerald-300{background:var(--sekur-blue)!important;color:#fff!important}.sekur-workspace :where(a,button):is(.text-emerald-200,.text-emerald-300),.sekur-discovery :where(a,button):is(.text-emerald-200,.text-emerald-300),.sekur-intelligence :where(a,button):is(.text-emerald-200,.text-emerald-300){color:var(--sekur-blue)!important}
 .mobile-nav{scrollbar-width:none}.mobile-nav::-webkit-scrollbar{display:none}
 

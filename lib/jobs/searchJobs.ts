@@ -1,6 +1,7 @@
 import { getCareerSearchQuery } from "./careerSearchAliases.ts";
 import { deduplicateJobs } from "./jobDeduplication.ts";
 import { getJobProviders } from "./jobProviderRegistry.ts";
+import { COUNTRY_CATALOG, getCountryCatalogEntry } from "../countryCatalog.ts";
 import type { JobSearchInput, JobSearchResponse } from "./types.ts";
 
 const allowedWorkplaces = new Set(["remote", "hybrid", "on-site"]);
@@ -13,13 +14,18 @@ export function parseJobSearchParams(params: URLSearchParams): JobSearchInput {
   if (workplace && !allowedWorkplaces.has(workplace)) throw new Error("Invalid workplaceType");
   if (sort && sort !== "relevance" && sort !== "newest") throw new Error("Invalid sort");
   const career = clean("career", 80) || null; const q = clean("q", 120) || (career ? getCareerSearchQuery(career) : "");
-  return { q, career, country: clean("country", 60).toLowerCase() || "sweden", location: clean("location", 100), workplaceType: (workplace || null) as JobSearchInput["workplaceType"], page, limit, sort: (sort || "relevance") as JobSearchInput["sort"] };
+  const country = clean("country", 60).toLowerCase() || "all";
+  if (country !== "all" && !COUNTRY_CATALOG.some((entry) => entry.slug === country)) throw new Error("Unsupported country");
+  return { q, career, country, location: clean("location", 100), workplaceType: (workplace || null) as JobSearchInput["workplaceType"], page, limit, sort: (sort || "relevance") as JobSearchInput["sort"] };
 }
 
 export async function searchJobs(input: JobSearchInput, providers = getJobProviders(input.country)): Promise<JobSearchResponse> {
   if (!providers.length) return { results: [], total: null, page: input.page, hasMore: false, coverageAvailable: false, providersUsed: [], providerErrors: [], fetchedAt: new Date().toISOString() };
   const settled = await Promise.allSettled(providers.map((provider) => provider.search(input)));
-  const results = settled.flatMap((result) => result.status === "fulfilled" ? result.value.jobs : []);
+  const countryCode = input.country === "all" ? null : getCountryCatalogEntry(input.country)?.code ?? null;
+  const results = settled.flatMap((result) => result.status === "fulfilled" ? result.value.jobs : [])
+    .filter((job) => !countryCode || job.countryCode?.toUpperCase() === countryCode)
+    .map((job) => ({ ...job, locationText: [job.locationText, job.countryName && !job.locationText?.toLowerCase().includes(job.countryName.toLowerCase()) ? job.countryName : null].filter(Boolean).join(", ") || null }));
   const providerErrors = settled.flatMap((result, i) => result.status === "rejected" ? [{ provider: providers[i].name, message: result.reason instanceof Error ? result.reason.message : "Provider unavailable" }] : []);
   const successful = settled.flatMap((result, i) => result.status === "fulfilled" ? [providers[i].name] : []);
   let jobs = deduplicateJobs(results); if (input.sort === "newest") jobs = jobs.sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""));
