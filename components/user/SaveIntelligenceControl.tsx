@@ -32,7 +32,7 @@ export default function SaveIntelligenceControl({ itemType, careerSlug, countryS
     });
   }, [careerSlug, countrySlug, itemType, label]);
 
-  if (!userId) return <button type="button" onClick={() => { const returnUrl = new URL(window.location.href); returnUrl.searchParams.set("save", "ready"); router.push(`/profile?returnTo=${encodeURIComponent(`${returnUrl.pathname}${returnUrl.search}`)}`); }} className="rounded-lg border border-white/15 bg-black/15 px-3 py-2 text-xs font-bold text-slate-300 hover:text-white">Sign in to save</button>;
+  if (!userId) return <button type="button" onClick={() => { const returnUrl = new URL(window.location.href); returnUrl.searchParams.set("save", "ready"); router.push(`/profile?returnTo=${encodeURIComponent(`${returnUrl.pathname}${returnUrl.search}`)}`); }} className="product-button product-button-secondary text-xs">Sign in to save</button>;
   async function toggle() {
     if (busy) return;
     setBusy(true);
@@ -54,5 +54,5 @@ export default function SaveIntelligenceControl({ itemType, careerSlug, countryS
       setBusy(false);
     }
   }
-  return <div><button type="button" onClick={toggle} disabled={busy} aria-pressed={Boolean(savedId)} className={`rounded-lg border px-3 py-2 text-xs font-bold transition disabled:opacity-50 ${savedId ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-200" : "border-white/15 bg-black/15 text-slate-300 hover:text-white"}`}>{savedId ? "Saved" : label}</button>{message && <p role="status" className="mt-2 max-w-72 text-xs text-slate-300">{message}</p>}</div>;
+  return <div><button type="button" onClick={toggle} disabled={busy} aria-pressed={Boolean(savedId)} className={`product-button text-xs ${savedId ? "border border-green-200 bg-green-50 text-green-800" : "product-button-secondary"}`}>{savedId ? "Saved" : label}</button>{message && <p role="status" className="mt-2 max-w-72 text-xs text-slate-600">{message}</p>}</div>;
 }

@@ -85,9 +85,9 @@ function UnavailableOpportunity({ entry, country }: { entry: CareerCatalogEntry;
         <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">{entry.category}</p>
         <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl md:text-6xl">{entry.title}<span className="mt-2 block text-emerald-300 md:text-[0.72em]">· {country.name}</span></h1>
         <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-400">{entry.description}</p>
-        <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.035] p-6"><h2 className="text-xl font-black">Detailed market data is not available yet.</h2><p className="mt-3 text-slate-400">We&apos;re still expanding data for this opportunity. SEKUR will not substitute another country&apos;s salary or generate an unsupported ranking.</p></div>
-        {entry.regulatedProfession && <p className="mt-4 rounded-xl border border-amber-300/15 bg-amber-300/[0.06] px-4 py-3 text-sm text-amber-100">Salary information does not establish legal eligibility to practise. {entry.regulationNote}</p>}
-        <div className="mt-6 flex flex-wrap gap-4"><SaveIntelligenceControl itemType="career_market" careerSlug={entry.slug} countrySlug={country.slug} label="Save this opportunity" /><Link href={`/careers/${entry.slug}`} className="rounded-xl border border-white/15 px-5 py-3 font-bold text-slate-200">View countries with data</Link></div>
+        <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6"><p className="product-eyebrow">Data coverage</p><h2 className="mt-2 text-xl font-black">Detailed market data is not available yet.</h2><p className="mt-3 max-w-3xl text-slate-600">We&apos;re still expanding verified evidence for this opportunity. SEKUR will not substitute another country&apos;s salary or generate an unsupported ranking.</p></div>
+        {entry.regulatedProfession && <p className="mt-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">Salary information does not establish legal eligibility to practise. {entry.regulationNote}</p>}
+        <div className="mt-6 flex flex-wrap gap-4"><SaveIntelligenceControl itemType="career_market" careerSlug={entry.slug} countrySlug={country.slug} label="Save this opportunity" /><Link href={`/careers/${entry.slug}`} className="product-button product-button-primary">Explore opportunities with verified data</Link></div>
       </section>
     </main>
   );
@@ -117,7 +117,7 @@ export default async function CareerPage({
           <p className="mx-auto mt-4 max-w-xl text-slate-400">
             This career is not in the SEKUR beta catalog.
           </p>
-          <Link href="/careers" className="mt-8 inline-block rounded-xl bg-blue-500 px-6 py-3 font-bold text-slate-950">
+          <Link href="/careers" className="product-button product-button-primary mt-8">
             Back to Career Explorer
           </Link>
         </section>
@@ -291,7 +291,7 @@ export default async function CareerPage({
         </section>
       )}
 
-      {selectedCountrySlug && <section className="mx-auto max-w-7xl px-6 pt-12"><div className="glass-panel rounded-3xl border p-6 sm:flex sm:items-center sm:justify-between sm:gap-8"><div><h2 className="text-2xl font-black">Want a recommendation for your situation?</h2><p className="mt-2 text-slate-400">Use your goals and preferences to compare this opportunity with other markets.</p></div><Link href="/opportunity-report" className="mt-5 inline-block rounded-xl bg-emerald-300 px-5 py-3 font-black text-slate-950 sm:mt-0">Build my Opportunity Report</Link></div><details className="mt-4 rounded-2xl border border-white/10 p-5"><summary className="cursor-pointer font-bold text-slate-300">Get updates when this changes</summary><div className="mt-4"><AlertPreferencesControl careerSlug={career.slug} countrySlug={selectedCountrySlug} /></div></details></section>}
+      {selectedCountrySlug && <section className="mx-auto max-w-7xl px-6 pt-12"><div className="glass-panel rounded-3xl border p-6 sm:flex sm:items-center sm:justify-between sm:gap-8"><div><h2 className="text-2xl font-black">Want a recommendation for your situation?</h2><p className="mt-2 text-slate-400">Use your goals and preferences to compare this opportunity with other markets.</p></div><Link href="/opportunity-report" className="product-button product-button-primary mt-5 sm:mt-0">Build my Opportunity Report</Link></div><details className="mt-4 rounded-2xl border border-white/10 p-5"><summary className="cursor-pointer font-bold text-slate-300">Get updates when this changes</summary><div className="mt-4"><AlertPreferencesControl careerSlug={career.slug} countrySlug={selectedCountrySlug} /></div></details></section>}
 
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid gap-8 lg:grid-cols-2">

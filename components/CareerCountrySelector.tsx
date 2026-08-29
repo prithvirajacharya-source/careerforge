@@ -24,15 +24,15 @@ export default function CareerCountrySelector({
   }
 
   return (
-    <div className="mt-7 flex flex-col gap-4 rounded-2xl border border-blue-400/20 bg-blue-400/[0.055] p-5 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mt-7 flex flex-col gap-4 rounded-2xl border border-blue-200 bg-blue-50 p-5 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <div className="text-xs font-bold uppercase tracking-[0.16em] text-blue-300">
+        <div className="text-xs font-bold uppercase tracking-[0.16em] text-blue-800">
           Labour market
         </div>
-        <div className="mt-2 text-base font-bold text-white">
+        <div className="mt-2 text-base font-bold text-slate-900">
           Compare {careerTitle} across countries
         </div>
-        <div className="mt-1 text-sm text-slate-400">
+        <div className="mt-1 text-sm text-slate-600">
           Native market currency: {selectedMarket?.currency ?? "Unavailable"}
         </div>
       </div>
@@ -41,7 +41,7 @@ export default function CareerCountrySelector({
         <select
           value={selectedCountrySlug}
           onChange={(event) => selectCountry(event.target.value)}
-          className="w-full rounded-xl border border-white/10 bg-[#0b1527] px-4 py-3 font-semibold text-white outline-none focus:border-blue-400/50 sm:min-w-56"
+          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold text-slate-900 outline-none focus:border-blue-600 sm:min-w-56"
         >
           {markets.map((market) => (
             <option key={market.slug} value={market.slug}>
