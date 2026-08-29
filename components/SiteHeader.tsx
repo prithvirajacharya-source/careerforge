@@ -1,12 +1,14 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import CurrencySelector from "@/components/CurrencySelector";
+import SiteNavigation from "@/components/SiteNavigation";
 import UserAccountLink from "@/components/user/UserAccountLink";
 
 export default function SiteHeader() {
   return (
     <header className="site-header">
       <div className="product-container site-header-inner">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/" className="flex shrink-0 items-center gap-3">
           <div className="site-logo-mark">
             S
           </div>
@@ -22,19 +24,15 @@ export default function SiteHeader() {
           </div>
         </Link>
 
-        <nav className="site-primary-nav" aria-label="Primary navigation">
-          <Link href="/profile">Overview</Link><Link href="/profile">My Career</Link><Link href="/opportunity-report">Opportunities</Link><Link href="/jobs">Jobs</Link><Link href="/careers">Explore</Link><Link href="/compare">Compare</Link>
-        </nav>
+        <Suspense fallback={<div className="site-primary-nav" aria-hidden="true" />}><SiteNavigation variant="desktop" /></Suspense>
 
-        <div className="site-secondary-nav">
+        <div className="site-secondary-nav" aria-label="Account utilities">
           <CurrencySelector />
 
           <Link href="/saved">Saved</Link><Link href="/pro">Pro</Link><UserAccountLink />
         </div>
       </div>
-      <nav className="mobile-nav" aria-label="Mobile navigation">
-        <Link href="/profile">Overview</Link><Link href="/opportunity-report">Opportunities</Link><Link href="/jobs">Jobs</Link><Link href="/careers">Explore</Link><Link href="/compare">Compare</Link>
-      </nav>
+      <Suspense fallback={<div className="mobile-nav" aria-hidden="true" />}><SiteNavigation variant="mobile" /></Suspense>
     </header>
   );
 }

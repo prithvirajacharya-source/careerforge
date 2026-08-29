@@ -5,9 +5,12 @@ import test from "node:test";
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf8");
 
 test("public navigation follows the career decision journey", () => {
-  const header = read("../components/SiteHeader.tsx");
+  const header = `${read("../components/SiteHeader.tsx")}\n${read("../components/SiteNavigation.tsx")}`;
   for (const destination of ["Overview", "My Career", "Opportunities", "Jobs", "Explore", "Compare", "Saved", "Pro"]) assert.match(header, new RegExp(destination));
   assert.doesNotMatch(header, />Countries<|>Intelligence</);
+  assert.match(header, /aria-current={active \? "page"/);
+  assert.match(header, /path\.startsWith\("\/countries"\)/);
+  assert.doesNotMatch(header, /href="\/profile">Overview/);
 });
 
 test("homepage centers career and country selection on one action", () => {
@@ -34,12 +37,22 @@ test("career evidence and secondary tools use progressive disclosure", () => {
 });
 
 test("profile, saved, and Pro describe user outcomes instead of internal structures", () => {
-  assert.match(read("../components/user/ProfileClient.tsx"), /Your career profile/);
+  assert.match(read("../components/user/ProfileClient.tsx"), />My Career</);
+  assert.match(read("../components/user/ProfileClient.tsx"), /Your career profile shapes SEKUR/);
   assert.match(read("../components/user/ProfileClient.tsx"), /Highest-value missing information/);
   assert.match(read("../components/user/SavedIntelligenceClient.tsx"), /one private library/);
   const pro = read("../app/pro/page.tsx");
   assert.match(pro, /Make better career decisions/);
   assert.doesNotMatch(pro, /capabilit|entitlement/i);
+});
+
+test("Overview is a distinct evidence-backed career command center", () => {
+  const overview = read("../components/user/OverviewClient.tsx");
+  for (const section of ["Your strongest opportunity", "Next best action", "Profile strength", "High-match jobs", "Saved opportunities"]) assert.match(overview, new RegExp(section));
+  assert.match(overview, /calculateProfileCompleteness/);
+  assert.match(overview, /\/api\/opportunities\/recommend/);
+  assert.match(overview, /representativeJobs/);
+  assert.doesNotMatch(overview, /Opportunity Score 84|Battery Systems Engineer/);
 });
 
 test("opportunity summary separates typical salary from the low-high range", () => {
