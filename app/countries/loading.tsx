@@ -1,6 +1,6 @@
 export default function CountriesLoading() {
   return (
-    <main className="min-h-screen bg-[#07101f] text-white">
+    <main className="sekur-discovery min-h-screen">
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="h-4 w-40 animate-pulse rounded bg-white/10" />
 
@@ -24,8 +24,8 @@ export default function CountriesLoading() {
               </div>
 
               <div className="mt-7 grid grid-cols-2 gap-3">
-                <div className="h-16 animate-pulse rounded-xl bg-black/20" />
-                <div className="h-16 animate-pulse rounded-xl bg-black/20" />
+                <div className="h-16 animate-pulse rounded-xl bg-slate-200" />
+                <div className="h-16 animate-pulse rounded-xl bg-slate-200" />
               </div>
             </div>
           ))}

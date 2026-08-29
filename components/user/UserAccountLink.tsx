@@ -11,5 +11,5 @@ export default function UserAccountLink() {
     const { data } = supabase.auth.onAuthStateChange((_event, session) => setSignedIn(Boolean(session)));
     return () => data.subscription.unsubscribe();
   }, []);
-  return <Link href="/profile" className="hidden rounded-xl border border-white/15 bg-black/20 px-4 py-2 text-sm font-semibold transition hover:border-emerald-300/30 hover:bg-white/10 sm:block">{signedIn ? "Account" : "Sign in"}</Link>;
+  return <Link href="/profile" className="hidden rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800 transition hover:border-blue-400 hover:text-blue-700 sm:block">{signedIn ? "Account" : "Sign in"}</Link>;
 }

@@ -1,6 +1,6 @@
 export default function CountryLoading() {
   return (
-    <main className="min-h-screen bg-[#07101f] text-white">
+    <main className="sekur-intelligence min-h-screen">
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
           <div>

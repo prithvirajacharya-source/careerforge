@@ -1,6 +1,7 @@
 import Link from "next/link";
 import HomeCareerSearch from "@/components/HomeCareerSearch";
 import SiteHeader from "@/components/SiteHeader";
+import CareerPathArt from "@/components/brand/CareerPathArt";
 import { getCareers } from "@/lib/careers";
 import { getCountries } from "@/lib/countries";
 
@@ -11,20 +12,21 @@ export default async function Home() {
       <SiteHeader />
       <section className="product-container home-hero-grid">
         <div>
-          <p className="text-sm font-semibold text-blue-300">Career intelligence for consequential decisions</p>
+          <p className="text-sm font-semibold text-blue-700">Career intelligence for consequential decisions</p>
           <h1 className="home-title mt-6">Your Career.<br />Planned. Powered.<br /><span className="text-blue-400">Protected.</span></h1>
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-300">Decide where to go, understand what you&apos;re worth, identify what you&apos;re missing, and take the next best action—with evidence behind every signal.</p>
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-600">Decide where to go, understand what you&apos;re worth, identify what you&apos;re missing, and take the next best action—with evidence behind every signal.</p>
           <div className="mt-9 flex flex-wrap gap-3">
             <a href="#find-opportunity" className="product-button product-button-primary">Find My Best Opportunity</a>
-            <Link href="/careers" className="product-button border border-slate-500 text-white hover:border-slate-300">Explore Careers</Link>
+            <Link href="/careers" className="product-button product-button-secondary">Explore Careers</Link>
           </div>
         </div>
         <div className="max-w-lg lg:justify-self-end">
-          <p className="mb-7 text-xs font-bold uppercase tracking-[.18em] text-blue-300">Your career trajectory</p>
+          <CareerPathArt variant="path" className="w-full" />
+          <p className="mb-5 mt-6 text-xs font-bold uppercase tracking-[.18em] text-blue-700">Your career trajectory</p>
           <div className="trajectory">
-            <div className="trajectory-step"><p className="text-xs font-semibold text-slate-400">UNDERSTAND</p><h2 className="mt-1 text-xl font-bold">Where you stand today</h2><p className="mt-1 text-sm text-slate-400">Profile, skills and current market position</p></div>
-            <div className="trajectory-step"><p className="text-xs font-semibold text-slate-400">DISCOVER</p><h2 className="mt-1 text-xl font-bold">Your strongest opportunities</h2><p className="mt-1 text-sm text-slate-400">Roles and markets compared on real evidence</p></div>
-            <div className="trajectory-step"><p className="text-xs font-semibold text-blue-300">ACT</p><h2 className="mt-1 text-xl font-bold">The next move that matters</h2><p className="mt-1 text-sm text-slate-400">Skills, jobs and actions tied to your goal</p></div>
+            <div className="trajectory-step"><p className="text-xs font-semibold text-slate-600">UNDERSTAND</p><h2 className="mt-1 text-xl font-bold">Where you stand today</h2><p className="mt-1 text-sm text-slate-600">Profile, skills and current market position</p></div>
+            <div className="trajectory-step"><p className="text-xs font-semibold text-slate-600">DISCOVER</p><h2 className="mt-1 text-xl font-bold">Your strongest opportunities</h2><p className="mt-1 text-sm text-slate-600">Roles and markets compared on real evidence</p></div>
+            <div className="trajectory-step"><p className="text-xs font-semibold text-blue-700">ACT</p><h2 className="mt-1 text-xl font-bold">The next move that matters</h2><p className="mt-1 text-sm text-slate-600">Skills, jobs and actions tied to your goal</p></div>
           </div>
         </div>
       </section>

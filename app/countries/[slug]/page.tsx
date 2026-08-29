@@ -141,7 +141,7 @@ export default async function CountryPage({
 
   if (!catalogCountry) {
     return (
-      <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
+      <main className="sekur-intelligence min-h-screen">
         <SiteHeader />
 
         <section className="mx-auto max-w-4xl px-6 py-24 text-center">
@@ -264,7 +264,7 @@ export default async function CountryPage({
     );
 
   return (
-    <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
+    <main className="sekur-intelligence min-h-screen">
       <SiteHeader />
 
       {/* HERO */}
@@ -430,7 +430,7 @@ export default async function CountryPage({
 
                 <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-400"
+                    className="h-full rounded-full bg-blue-600"
                     style={{
                       width: `${researchProgress}%`,
                     }}
@@ -462,7 +462,7 @@ export default async function CountryPage({
                   return (
                     <div
                       key={factor.key}
-                      className="rounded-2xl border border-white/10 bg-[#0b1527] p-5"
+                      className="rounded-xl border border-slate-200 bg-white p-5"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div>
@@ -493,7 +493,7 @@ export default async function CountryPage({
                       <div className="mt-4">
                         <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-400"
+                            className="h-full rounded-full bg-blue-600"
                             style={{
                               width: `${factor.score}%`,
                             }}
@@ -626,7 +626,7 @@ export default async function CountryPage({
 
       {/* PERSONAL INTELLIGENCE */}
       <section className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="rounded-3xl border border-blue-400/20 bg-gradient-to-br from-blue-500/10 to-emerald-400/5 p-10">
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-8">
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-300">
             Personal Intelligence
           </p>

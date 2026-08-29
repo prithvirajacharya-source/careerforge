@@ -52,7 +52,7 @@ function CareerOverview({ entry, profiles, countries }: { entry: CareerCatalogEn
   const rankingAvailable = available.length > 1 && available.every((item) => item.eligibility.rankEligible);
 
   return (
-    <main className="sekur-discovery min-h-screen bg-[#07101f] text-white">
+    <main className="sekur-discovery min-h-screen">
       <SiteHeader />
       <section className="mx-auto max-w-7xl px-6 py-16">
         <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">{entry.category}</p>
@@ -79,7 +79,7 @@ function CareerOverview({ entry, profiles, countries }: { entry: CareerCatalogEn
 
 function UnavailableOpportunity({ entry, country }: { entry: CareerCatalogEntry; country: CountryCatalogEntry }) {
   return (
-    <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
+    <main className="sekur-intelligence min-h-screen">
       <SiteHeader />
       <section className="mx-auto max-w-5xl px-6 py-16">
         <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">{entry.category}</p>
@@ -109,7 +109,7 @@ export default async function CareerPage({
 
   if (!catalogEntry) {
     return (
-      <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
+      <main className="sekur-intelligence min-h-screen">
         <SiteHeader />
         <section className="mx-auto max-w-4xl px-6 py-24 text-center">
           <div className="text-4xl" aria-hidden="true">&#128269;</div>
@@ -178,7 +178,7 @@ export default async function CareerPage({
       6
     );
   return (
-    <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
+    <main className="sekur-intelligence min-h-screen">
       <SiteHeader />
       <section className="mx-auto max-w-7xl px-5 pb-12 pt-12 sm:px-6 sm:pb-14 sm:pt-16">
         <div className="max-w-4xl">
@@ -324,7 +324,7 @@ export default async function CareerPage({
           <div>
             <h2 className="text-3xl font-black">Career roadmap</h2>
             <div className="mt-6 space-y-3">{career.roadmap.map((step, index) => (
-              <div key={step} className="flex gap-4 rounded-2xl border border-white/10 bg-[#0b1527] p-5"><span className="font-black text-blue-300">{index + 1}</span><span>{step}</span></div>
+              <div key={step} className="flex gap-4 rounded-lg border border-slate-200 bg-white p-5"><span className="font-black text-blue-700">{index + 1}</span><span>{step}</span></div>
             ))}</div>
           </div>
           <div>

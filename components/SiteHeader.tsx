@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import CurrencySelector from "@/components/CurrencySelector";
+import SekurMark from "@/components/brand/SekurMark";
 import SiteNavigation from "@/components/SiteNavigation";
 import UserAccountLink from "@/components/user/UserAccountLink";
 
@@ -9,9 +10,7 @@ export default function SiteHeader() {
     <header className="site-header">
       <div className="product-container site-header-inner">
         <Link href="/" className="flex shrink-0 items-center gap-3">
-          <div className="site-logo-mark">
-            S
-          </div>
+          <SekurMark className="site-logo-mark" />
 
           <div>
             <div className="text-xl font-black tracking-tight">

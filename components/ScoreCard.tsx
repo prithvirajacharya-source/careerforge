@@ -46,7 +46,7 @@ export default function ScoreCard({
           </div>
         </div>
 
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/20 to-emerald-400/20 text-2xl">
+        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-50 text-2xl">
           ★
         </div>
       </div>

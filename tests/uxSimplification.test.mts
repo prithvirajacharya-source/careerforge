@@ -40,7 +40,7 @@ test("profile, saved, and Pro describe user outcomes instead of internal structu
   assert.match(read("../components/user/ProfileClient.tsx"), />My Career</);
   assert.match(read("../components/user/ProfileClient.tsx"), /Your career profile shapes SEKUR/);
   assert.match(read("../components/user/ProfileClient.tsx"), /Highest-value missing information/);
-  assert.match(read("../components/user/SavedIntelligenceClient.tsx"), /one private library/);
+  assert.match(read("../components/user/SavedIntelligenceClient.tsx"), /Career decisions and comparisons/);
   const pro = read("../app/pro/page.tsx");
   assert.match(pro, /Make better career decisions/);
   assert.doesNotMatch(pro, /capabilit|entitlement/i);
