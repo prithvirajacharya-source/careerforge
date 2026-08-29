@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { COUNTRY_CATALOG, type CountryCatalogEntry } from "./countryCatalog";
+import { SORTED_COUNTRY_CATALOG as COUNTRY_CATALOG, type CountryCatalogEntry } from "./countryCatalog";
 
 export async function getCountries(): Promise<CountryCatalogEntry[]> {
   let data: Array<Partial<CountryCatalogEntry> & { slug?: string }> | null = null;

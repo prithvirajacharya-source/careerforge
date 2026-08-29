@@ -6,7 +6,7 @@ import type { JobPosting, JobSearchResponse } from "@/lib/jobs/types";
 import type { JobMatchProfile } from "@/lib/jobs/jobMatching";
 import { supabase } from "@/lib/supabase";
 import { resolveEntitlements } from "@/lib/personalization/entitlements";
-import { COUNTRY_CATALOG, getCountryCatalogEntry } from "@/lib/countryCatalog";
+import { SORTED_COUNTRY_CATALOG as COUNTRY_CATALOG, getCountryCatalogEntry } from "@/lib/countryCatalog";
 
 export default function JobsSearchClient() {
   const initial=useSearchParams(); const [q,setQ]=useState(initial.get("q")??""); const [country,setCountry]=useState(initial.get("country")??"all"); const [location,setLocation]=useState(initial.get("location")??""); const [workplace,setWorkplace]=useState(initial.get("workplaceType")??""); const [sort,setSort]=useState(initial.get("sort")??"relevance");

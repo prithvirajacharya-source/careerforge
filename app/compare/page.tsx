@@ -2,6 +2,7 @@ import CompareClient from "./CompareClient";
 import SiteHeader from "@/components/SiteHeader";
 import { getAllCountryIntelligence } from "@/lib/intelligence/service";
 import { supabase } from "@/lib/supabase";
+import { sortCountriesByName } from "@/lib/countryCatalog";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ export default async function ComparePage({
       .from("countries")
       .select("slug, name, code, region");
 
-  const countries =
+  const countries = sortCountriesByName(
     ((countryRows ?? []) as CountryRow[])
       .filter(
         (country) =>
@@ -45,7 +46,8 @@ export default async function ComparePage({
         result:
           intelligence[country.slug]
             .result,
-      }));
+      })),
+  );
 
   if (countries.length < 2) {
     return (

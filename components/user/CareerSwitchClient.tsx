@@ -10,8 +10,9 @@ import { resolveEntitlements } from "@/lib/personalization/entitlements";
 import { trackMonetizationEvent } from "@/lib/personalization/analytics";
 import { supabase } from "@/lib/supabase";
 import { formatCurrency } from "@/lib/currency";
+import { SORTED_COUNTRY_CATALOG } from "@/lib/countryCatalog";
 
-const countries = { "united-states": "United States", sweden: "Sweden", germany: "Germany" };
+const countries = Object.fromEntries(SORTED_COUNTRY_CATALOG.filter(country => ["united-states", "sweden", "germany"].includes(country.slug)).map(country => [country.slug, country.name]));
 export default function CareerSwitchClient({ user, careers, markets }: { user: User; careers: CareerProfile[]; markets: CareerCountryProfile[] }) {
   const [allowed, setAllowed] = useState(false);
   const [currentCareerSlug, setCurrentCareer] = useState("mechanical-engineer"); const [targetCareerSlug, setTargetCareer] = useState("software-engineer");

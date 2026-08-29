@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CAREER_CATALOG, CAREER_CATEGORIES } from "../lib/careerCatalog.ts";
-import { COUNTRY_CATALOG } from "../lib/countryCatalog.ts";
+import { COUNTRY_CATALOG, SORTED_COUNTRY_CATALOG } from "../lib/countryCatalog.ts";
 import { careerMarketEligibility, publicCoverageMessage } from "../lib/careerEvidenceEligibility.ts";
 import { getCareerCountryProfile } from "../lib/careerCountryProfiles.ts";
 import { CAREER_RESEARCH_TARGETS, PRIORITY_CAREER_MAPPINGS, getCareerResearchTarget } from "../lib/careerResearch/registry.ts";
@@ -15,6 +15,12 @@ test("beta catalogs expose exactly 44 careers in ten categories and 29 countries
   assert.equal(COUNTRY_CATALOG.length, 29);
   assert.equal(new Set(COUNTRY_CATALOG.map((country) => country.slug)).size, 29);
   assert.equal(COUNTRY_CATALOG.some((country) => country.name === "South America"), false);
+});
+
+test("shared country options are alphabetical without mutating the canonical catalog", () => {
+  const names = SORTED_COUNTRY_CATALOG.map((country) => country.name);
+  assert.deepEqual(names, [...names].sort((left, right) => left.localeCompare(right, "en")));
+  assert.notEqual(SORTED_COUNTRY_CATALOG, COUNTRY_CATALOG);
 });
 
 test("difficult careers remain discoverable without acquiring evidence or ranking eligibility", () => {

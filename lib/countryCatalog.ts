@@ -43,7 +43,12 @@ export const COUNTRY_CATALOG: CountryCatalogEntry[] = [
   country("sri-lanka", "Sri Lanka", "LK", "LKR", "Sinhala, Tamil", "Asia-Pacific"),
 ];
 
+export function sortCountriesByName<T extends { name: string }>(countries: readonly T[]): T[] {
+  return [...countries].sort((left, right) => left.name.localeCompare(right.name, "en"));
+}
+
+export const SORTED_COUNTRY_CATALOG = sortCountriesByName(COUNTRY_CATALOG);
+
 export function getCountryCatalogEntry(slug: string) {
   return COUNTRY_CATALOG.find((entry) => entry.slug === slug) ?? null;
 }
-
