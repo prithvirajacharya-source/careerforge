@@ -24,11 +24,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      data-sekur-theme="glass-uhd"
-      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('sekur-visual-theme');document.documentElement.dataset.sekurTheme=t==='original'?'original':'glass-uhd'}catch(e){document.documentElement.dataset.sekurTheme='glass-uhd'}})();` }} /></head>
       <body className="sekur-shell min-h-full flex flex-col">
         <CurrencyProvider>{children}<SiteFooter /><DeveloperMode /></CurrencyProvider>
       </body>

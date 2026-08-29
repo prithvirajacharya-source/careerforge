@@ -6,22 +6,50 @@ import { getCountries } from "@/lib/countries";
 
 export default async function Home() {
   const [careers, countries] = await Promise.all([getCareers(), getCountries()]);
+  return <main className="product-shell">
+    <div className="home-hero">
+      <SiteHeader />
+      <section className="product-container home-hero-grid">
+        <div>
+          <p className="text-sm font-semibold text-blue-300">Career intelligence for consequential decisions</p>
+          <h1 className="home-title mt-6">Your Career.<br />Planned. Powered.<br /><span className="text-blue-400">Protected.</span></h1>
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-300">Decide where to go, understand what you&apos;re worth, identify what you&apos;re missing, and take the next best action—with evidence behind every signal.</p>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <a href="#find-opportunity" className="product-button product-button-primary">Find My Best Opportunity</a>
+            <Link href="/careers" className="product-button border border-slate-500 text-white hover:border-slate-300">Explore Careers</Link>
+          </div>
+        </div>
+        <div className="max-w-lg lg:justify-self-end">
+          <p className="mb-7 text-xs font-bold uppercase tracking-[.18em] text-blue-300">Your career trajectory</p>
+          <div className="trajectory">
+            <div className="trajectory-step"><p className="text-xs font-semibold text-slate-400">UNDERSTAND</p><h2 className="mt-1 text-xl font-bold">Where you stand today</h2><p className="mt-1 text-sm text-slate-400">Profile, skills and current market position</p></div>
+            <div className="trajectory-step"><p className="text-xs font-semibold text-slate-400">DISCOVER</p><h2 className="mt-1 text-xl font-bold">Your strongest opportunities</h2><p className="mt-1 text-sm text-slate-400">Roles and markets compared on real evidence</p></div>
+            <div className="trajectory-step"><p className="text-xs font-semibold text-blue-300">ACT</p><h2 className="mt-1 text-xl font-bold">The next move that matters</h2><p className="mt-1 text-sm text-slate-400">Skills, jobs and actions tied to your goal</p></div>
+          </div>
+        </div>
+      </section>
+    </div>
 
-  return <main className="sekur-home min-h-screen text-white">
-    <SiteHeader />
-    <section className="mx-auto flex min-h-[680px] max-w-7xl flex-col justify-center px-5 py-16 sm:px-6">
-      <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(380px,520px)] lg:gap-16 xl:gap-24">
-        <div className="max-w-3xl">
-        <p className="text-xs font-black uppercase tracking-[.22em] text-emerald-300">Career decisions, backed by real data</p>
-        <h1 className="mt-5 text-5xl font-black leading-[.98] sm:text-6xl lg:text-7xl">Make smarter<br /><span className="text-emerald-300">career moves.</span></h1>
-        <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">Choose a career and a country. SEKUR brings the salary, job outlook, and opportunity signals together.</p>
-        <div className="mt-9 grid max-w-2xl gap-5 border-t border-white/10 pt-6 sm:grid-cols-3">
-          {[['Salary', 'Local pay ranges'], ['Job outlook', 'Hiring direction'], ['Career opportunity', 'Signals that matter']].map(([title, copy]) => <div key={title}><h2 className="text-sm font-black text-emerald-200">{title}</h2><p className="mt-1 text-sm text-slate-500">{copy}</p></div>)}
-        </div>
-        <Link href="/careers" className="mt-7 inline-flex items-center text-sm font-bold text-slate-300 underline decoration-white/20 underline-offset-4 transition hover:text-white hover:decoration-white/60">Browse all careers →</Link>
-        </div>
-        <div className="lg:justify-self-end">
-          <HomeCareerSearch careers={careers.map((career) => ({ slug: career.slug, name: career.title }))} countries={countries.map((country) => ({ slug: country.slug, name: country.name }))} />
+    <section className="bg-white">
+      <div className="product-container journey-row">
+        <div className="journey-item"><span className="text-sm font-bold text-blue-600">01</span><h2 className="mt-3 text-lg font-bold">Know where you are</h2><p className="mt-2 text-sm leading-6 text-slate-600">Build your career profile and see which evidence is complete.</p></div>
+        <div className="journey-item"><span className="text-sm font-bold text-blue-600">02</span><h2 className="mt-3 text-lg font-bold">Compare where to go</h2><p className="mt-2 text-sm leading-6 text-slate-600">Evaluate careers and countries across salary, demand, safety and relocation.</p></div>
+        <div className="journey-item"><span className="text-sm font-bold text-blue-600">03</span><h2 className="mt-3 text-lg font-bold">Take the next action</h2><p className="mt-2 text-sm leading-6 text-slate-600">Connect your gaps to relevant jobs, learning and a practical plan.</p></div>
+      </div>
+    </section>
+
+    <section id="find-opportunity" className="product-section">
+      <div className="product-container grid gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
+        <div><p className="product-eyebrow">Opportunity finder</p><h2 className="mt-4 text-4xl font-bold leading-tight">Where can your career perform best?</h2><p className="mt-5 max-w-xl leading-7 text-slate-600">Choose a career and country to open the full intelligence view. SEKUR brings salary, market demand, skills, jobs, language, relocation and safety into one decision.</p></div>
+        <HomeCareerSearch careers={careers.map(c => ({slug:c.slug,name:c.title}))} countries={countries.map(c => ({slug:c.slug,name:c.name}))} />
+      </div>
+    </section>
+
+    <section className="product-rule bg-white">
+      <div className="product-container product-section grid gap-10 md:grid-cols-2">
+        <div><p className="product-eyebrow">Evidence first</p><h2 className="mt-4 text-3xl font-bold">Understand why—not just the score.</h2><p className="mt-4 leading-7 text-slate-600">Coverage, confidence and source provenance stay connected to each intelligence result.</p></div>
+        <div className="divide-y divide-slate-200 border-y border-slate-200">
+          {[['Opportunity intelligence','12 dimensions combine your profile with market evidence.'],['Source-first jobs','Open roles link back to the original employer or trusted source.'],['Decision tools','Save, compare and monitor the opportunities that matter.']].map(([t,d])=><div className="py-5" key={t}><h3 className="font-bold">{t}</h3><p className="mt-1 text-sm leading-6 text-slate-600">{d}</p></div>)}
         </div>
       </div>
     </section>

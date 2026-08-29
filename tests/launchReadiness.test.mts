@@ -34,5 +34,5 @@ test("career discovery has a bounded canonical fallback", () => {
 
 test("country discovery uses the canonical beta catalog instead of rendering blank", () => {
   assert.match(read("../lib/countries.ts"), /return COUNTRY_CATALOG/);
-  assert.match(read("../app/countries/page.tsx"), /Career opportunities around the world/);
+  assert.match(read("../app/countries/page.tsx"), /Where can your career perform best/);
 });

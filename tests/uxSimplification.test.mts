@@ -4,21 +4,22 @@ import test from "node:test";
 
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf8");
 
-test("public navigation presents one small, plain-language information architecture", () => {
+test("public navigation follows the career decision journey", () => {
   const header = read("../components/SiteHeader.tsx");
-  for (const destination of ["Careers", "Countries", "Saved", "Account"]) assert.match(header, new RegExp(destination));
-  assert.doesNotMatch(header, />Compare<|>Pro<|>Intelligence</);
+  for (const destination of ["Overview", "My Career", "Opportunities", "Jobs", "Explore", "Compare", "Saved", "Pro"]) assert.match(header, new RegExp(destination));
+  assert.doesNotMatch(header, />Countries<|>Intelligence</);
 });
 
 test("homepage centers career and country selection on one action", () => {
   const home = read("../app/page.tsx");
   const search = read("../components/HomeCareerSearch.tsx");
-  assert.match(home, /Make smarter/);
-  assert.match(search, /What job are you interested in/);
-  assert.match(search, /Where do you want to work/);
-  assert.match(search, /Show opportunities/);
+  assert.match(home, /Your Career/);
+  assert.match(home, /Planned\. Powered/);
+  assert.match(search, /\n\s*Career\n/);
+  assert.match(search, /\n\s*Country\n/);
+  assert.match(search, /View Career Opportunity/);
   assert.match(search, /disabled={!career \|\| !country}/);
-  assert.match(home, /Browse all careers →/);
+  assert.match(home, /Explore Careers/);
   assert.doesNotMatch(search, /AI risk level|Experience level|Apply filters/);
 });
 
@@ -33,10 +34,11 @@ test("career evidence and secondary tools use progressive disclosure", () => {
 });
 
 test("profile, saved, and Pro describe user outcomes instead of internal structures", () => {
-  assert.match(read("../components/user/ProfileClient.tsx"), /Tell SEKUR about yourself/);
+  assert.match(read("../components/user/ProfileClient.tsx"), /Your career profile/);
+  assert.match(read("../components/user/ProfileClient.tsx"), /Highest-value missing information/);
   assert.match(read("../components/user/SavedIntelligenceClient.tsx"), /one private library/);
   const pro = read("../app/pro/page.tsx");
-  assert.match(pro, /Move from information to a decision/);
+  assert.match(pro, /Make better career decisions/);
   assert.doesNotMatch(pro, /capabilit|entitlement/i);
 });
 

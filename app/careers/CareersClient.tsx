@@ -34,12 +34,11 @@ export default function CareersClient({ careers, initialSearch = "", initialCate
       <SiteHeader />
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="max-w-3xl">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-400">Explore</p>
+          <p className="product-eyebrow">Career paths</p>
           <h1 className="mt-4 text-5xl font-black tracking-tight md:text-6xl">
-            Find a career that fits
-            <span className="block bg-gradient-to-r from-blue-400 to-emerald-300 bg-clip-text text-transparent">your goals.</span>
+            Find the path that fits your goals.
           </h1>
-          <p className="mt-6 text-lg leading-8 text-slate-400">Choose a career. You can select where you want to work on the next screen.</p>
+          <p className="mt-6 text-lg leading-8 text-slate-400">Explore demand, salary, required skills, education and country-specific opportunity evidence.</p>
         </div>
 
         <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.035] p-5">

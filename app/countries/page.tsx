@@ -11,10 +11,10 @@ export default async function CountriesPage() {
     <main className="sekur-discovery min-h-screen bg-[#07101f] text-white">
       <SiteHeader />
       <section className="mx-auto max-w-7xl px-6 py-16">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">Countries</p>
-        <h1 className="mt-4 max-w-4xl text-5xl font-black tracking-tight md:text-6xl">Career opportunities around the world.</h1>
+        <p className="product-eyebrow">Career markets</p>
+        <h1 className="mt-4 max-w-4xl text-5xl font-black tracking-tight md:text-6xl">Where can your career perform best?</h1>
         <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-400">
-          Browse every beta country. Detailed career-market information appears only where SEKUR has verified sources.
+          Compare markets through the factors that shape a career: opportunity, salary, demand, cost, language, relocation and safety.
         </p>
 
         {regions.map((region) => {

@@ -141,7 +141,7 @@ export default async function CountryPage({
 
   if (!catalogCountry) {
     return (
-      <main className="min-h-screen bg-[#07101f] text-white">
+      <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
         <SiteHeader />
 
         <section className="mx-auto max-w-4xl px-6 py-24 text-center">
@@ -264,7 +264,7 @@ export default async function CountryPage({
     );
 
   return (
-    <main className="min-h-screen bg-[#07101f] text-white">
+    <main className="sekur-intelligence min-h-screen bg-[#07101f] text-white">
       <SiteHeader />
 
       {/* HERO */}
